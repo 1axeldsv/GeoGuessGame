@@ -21,7 +21,7 @@
             height: 400px;
             width: 50%;
         }
-        #rosace {
+        #circle {
             width: 40%;
             height: 400px;
             position: relative;
@@ -30,6 +30,9 @@
             border: 2px solid blue;
             background: rgba(0, 0, 255, 0.1);
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .city {
             position: absolute;
@@ -52,7 +55,7 @@
     <h1>GeoGuess : Trouvez le point central !</h1>
     <div id="container">
         <div id="map"></div>
-        <div id="rosace"></div>
+        <div id="circle"></div>
     </div>
     <div id="score">Cliquez sur la carte pour choisir un emplacement.</div>
 
@@ -90,7 +93,7 @@
 
         console.log("Point central:", centralPoint);
 
-        // Grandes villes pour la rosace
+        // Grandes villes pour le cercle
         var cities = [
             { name: "New York", coords: [40.7128, -74.0060] },
             { name: "Tokyo", coords: [35.6762, 139.6503] },
@@ -114,34 +117,27 @@
             return R * 2 * Math.asin(Math.sqrt(a));
         }
 
-        // Fonction pour ajouter la rosace avec les villes
-        function createRosace(cities, centralPoint) {
-            var rosace = document.getElementById('rosace');
-            var radius = 150; // Rayon de la rosace en pixels
+        // Fonction pour ajouter le cercle avec les points
+        function createCircle(cities, centralPoint) {
+            var circle = document.getElementById('circle');
+            var radius = 150; // Rayon du cercle en pixels
 
             cities.forEach(function(city, index) {
-                // Calculer l'angle entre le point central et la ville
-                var lat1 = centralPoint[0];
-                var lon1 = centralPoint[1];
-                var lat2 = city.coords[0];
-                var lon2 = city.coords[1];
-                var deltaLat = lat2 - lat1;
-                var deltaLon = lon2 - lon1;
-                var angle = Math.atan2(deltaLon, deltaLat) * 180 / Math.PI;
-                angle = (angle + 360) % 360; // Ajuster pour les angles négatifs
+                // Calculer l'angle pour les 8 points
+                var angle = (360 / cities.length) * index; // Angle en degrés
 
                 // Convertir l'angle en coordonnées polaires
-                var x = radius * Math.cos((angle - 90) * Math.PI / 180) + radius;
-                var y = radius * Math.sin((angle - 90) * Math.PI / 180) + radius;
+                var x = radius * Math.cos(angle * Math.PI / 180) + radius;
+                var y = radius * Math.sin(angle * Math.PI / 180) + radius;
 
                 // Créer et ajouter le div pour la ville
                 var cityDiv = document.createElement('div');
                 cityDiv.className = 'city';
                 cityDiv.style.left = x + 'px';
                 cityDiv.style.top = y + 'px';
-                cityDiv.innerText = city.name + " (" + Math.round(calculateDistance(lat1, lon1, lat2, lon2)) + " km)";
+                cityDiv.innerText = city.name + " (" + Math.round(calculateDistance(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1])) + " km)";
 
-                rosace.appendChild(cityDiv);
+                circle.appendChild(cityDiv);
 
                 // Ajouter des marqueurs pour les villes sur la carte
                 L.marker(city.coords).addTo(map)
@@ -150,8 +146,8 @@
             });
         }
 
-        // Créer la rosace
-        createRosace(cities, centralPoint);
+        // Créer le cercle
+        createCircle(cities, centralPoint);
 
         // Quand l'utilisateur clique sur la carte, calculer la distance au point central
         map.on('click', function(e) {

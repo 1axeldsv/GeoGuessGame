@@ -11,12 +11,26 @@
             padding: 0;
             text-align: center;
         }
+        #container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin: 20px;
+        }
         #map {
             height: 400px;
-            width: 100%;
+            width: 50%;
         }
-        h1 {
-            margin-top: 20px;
+        #rosace {
+            width: 40%;
+            height: 400px;
+            position: relative;
+            margin-left: 20px;
+        }
+        .city {
+            position: absolute;
+            font-size: 14px;
+            transform: translate(-50%, -50%);
         }
         #score {
             margin-top: 20px;
@@ -28,7 +42,10 @@
 </head>
 <body>
     <h1>GeoGuess : Trouvez le point central !</h1>
-    <div id="map"></div>
+    <div id="container">
+        <div id="map"></div>
+        <div id="rosace"></div>
+    </div>
     <div id="score">Cliquez sur la carte pour choisir un emplacement.</div>
 
     <!-- Leaflet JS pour la carte -->
@@ -65,20 +82,17 @@
 
         console.log("Point central:", centralPoint);
 
-        // Grandes villes
+        // Grandes villes pour la rosace
         var cities = [
             { name: "New York", coords: [40.7128, -74.0060] },
             { name: "Tokyo", coords: [35.6762, 139.6503] },
             { name: "Paris", coords: [48.8566, 2.3522] },
-            { name: "Sydney", coords: [-33.8688, 151.2093] }
+            { name: "Sydney", coords: [-33.8688, 151.2093] },
+            { name: "São Paulo", coords: [-23.5505, -46.6333] },
+            { name: "Moscow", coords: [55.7558, 37.6176] },
+            { name: "Istanbul", coords: [41.0082, 28.9784] },
+            { name: "Cairo", coords: [30.0444, 31.2357] }
         ];
-
-        // Ajouter des marqueurs pour les villes
-        cities.forEach(function(city) {
-            L.marker(city.coords).addTo(map)
-                .bindPopup(city.name)
-                .openPopup();
-        });
 
         // Calculer la distance en kilomètres entre deux points (formule de Haversine)
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -91,6 +105,35 @@
                 (1 - Math.cos(dLon)) / 2;
             return R * 2 * Math.asin(Math.sqrt(a));
         }
+
+        // Fonction pour ajouter la rosace avec les villes
+        function createRosace(cities, centralPoint) {
+            var rosace = document.getElementById('rosace');
+            var radius = 200; // Rayon de la rosace en pixels
+            var angleStep = 360 / cities.length;
+
+            cities.forEach(function(city, index) {
+                var angle = angleStep * index; // Angle pour chaque ville
+                var x = radius * Math.cos(angle * Math.PI / 180) + radius;
+                var y = radius * Math.sin(angle * Math.PI / 180) + radius;
+
+                var cityDiv = document.createElement('div');
+                cityDiv.className = 'city';
+                cityDiv.style.left = x + 'px';
+                cityDiv.style.top = y + 'px';
+                cityDiv.innerText = city.name;
+
+                rosace.appendChild(cityDiv);
+
+                // Ajouter des marqueurs pour les villes sur la carte
+                L.marker(city.coords).addTo(map)
+                    .bindPopup(city.name)
+                    .openPopup();
+            });
+        }
+
+        // Créer la rosace
+        createRosace(cities, centralPoint);
 
         // Quand l'utilisateur clique sur la carte, calculer la distance au point central
         map.on('click', function(e) {
@@ -110,6 +153,11 @@
 
             // Afficher la distance et le score
             document.getElementById('score').innerText = "Distance au point central : " + Math.round(distance) + " km. Score : " + Math.round(score) + " points.";
+
+            // Ajouter un marqueur pour l'emplacement choisi
+            L.marker([userLatLng.lat, userLatLng.lng]).addTo(map)
+                .bindPopup("Vous avez choisi cet endroit.")
+                .openPopup();
         });
     </script>
 </body>

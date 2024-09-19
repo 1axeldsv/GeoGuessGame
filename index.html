@@ -18,6 +18,10 @@
         h1 {
             margin-top: 20px;
         }
+        #score {
+            margin-top: 20px;
+            font-size: 24px;
+        }
     </style>
     <!-- Leaflet CSS pour la carte -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -25,6 +29,7 @@
 <body>
     <h1>GeoGuess : Trouvez le point central !</h1>
     <div id="map"></div>
+    <div id="score">Cliquez sur la carte pour choisir un emplacement.</div>
 
     <!-- Leaflet JS pour la carte -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -73,6 +78,33 @@
             L.marker(city.coords).addTo(map)
                 .bindPopup(city.name)
                 .openPopup();
+        });
+
+        // Calculer la distance en kilomètres entre deux points (formule de Haversine)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            var R = 6371; // Rayon de la Terre en km
+            var dLat = (lat2 - lat1) * Math.PI / 180;
+            var dLon = (lon2 - lon1) * Math.PI / 180;
+            var a = 
+                0.5 - Math.cos(dLat)/2 + 
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                (1 - Math.cos(dLon)) / 2;
+            return R * 2 * Math.asin(Math.sqrt(a));
+        }
+
+        // Quand l'utilisateur clique sur la carte, calculer la distance au point central
+        map.on('click', function(e) {
+            var userLatLng = e.latlng; // Coordonnées du point cliqué par l'utilisateur
+            var distance = calculateDistance(userLatLng.lat, userLatLng.lng, centralPoint[0], centralPoint[1]);
+
+            // Calculer le score basé sur la distance
+            var maxPoints = 1000;
+            var pointsLostPerKm = 10;
+            var pointsLost = Math.min(distance * pointsLostPerKm, maxPoints); // Limiter la perte à 1000 points max
+            var score = maxPoints - pointsLost;
+
+            // Afficher la distance et le score
+            document.getElementById('score').innerText = "Distance au point central : " + Math.round(distance) + " km. Score : " + Math.round(score) + " points.";
         });
     </script>
 </body>

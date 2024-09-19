@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu GeoGuess</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+    </style>
+    <!-- Leaflet CSS pour la carte -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+    <h1>GeoGuess : Trouvez le point central !</h1>
+    <div id="map"></div>
+
+    <!-- Leaflet JS pour la carte -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialiser la carte et la centrer sur une zone par défaut
+        var map = L.map('map').setView([20, 0], 2); // Zoom sur le monde
+
+        // Ajouter les tuiles OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+    </script>
+</body>
+</html>

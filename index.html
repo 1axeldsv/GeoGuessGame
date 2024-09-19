@@ -3,91 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jeu GeoGuess</title>
+    <title>GeoGuess Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background-color: #f0f2f5;
             color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #3498db;
+            color: white;
+            padding: 20px 0;
             text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         h1 {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            padding: 20px;
             margin: 0;
             font-size: 2.5em;
+            font-weight: 600;
         }
         #container {
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            margin: 20px auto;
-            max-width: 1200px;
+            padding: 20px;
+            flex-grow: 1;
         }
         #map {
             height: 500px;
             width: 60%;
-            border: 2px solid #3498db;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
         #circle-container {
-            position: relative;
             width: 30%;
-            height: 500px;
             margin-left: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
         #circle {
-            position: absolute;
-            border-radius: 50%;
-            border: 3px solid #3498db;
-            background: rgba(52, 152, 219, 0.2);
             width: 300px;
             height: 300px;
+            border-radius: 50%;
+            border: 3px solid #3498db;
+            background: rgba(52, 152, 219, 0.1);
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .city {
             position: absolute;
             font-size: 12px;
             transform: translate(-50%, -50%);
             background-color: white;
-            border-radius: 5px;
-            padding: 2px 4px;
+            border-radius: 15px;
+            padding: 4px 8px;
             border: 1px solid #3498db;
             white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             color: #3498db;
+            font-weight: 600;
         }
         #score {
             margin-top: 20px;
-            font-size: 1.5em;
-            font-weight: bold;
-            background-color: #3498db;
-            color: #ecf0f1;
+            font-size: 1.2em;
+            font-weight: 600;
+            background-color: #2ecc71;
+            color: white;
             padding: 10px 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        #score:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        footer {
+            background-color: #34495e;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 0.9em;
         }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
-    <h1>GeoGuess : Trouvez le point central !</h1>
+    <header>
+        <h1>GeoGuess Challenge</h1>
+    </header>
     <div id="container">
         <div id="map"></div>
         <div id="circle-container">
             <div id="circle"></div>
+            <div id="score">Cliquez sur la carte pour jouer !</div>
         </div>
     </div>
-    <div id="score">Cliquez sur la carte pour choisir un emplacement.</div>
+    <footer>
+        &copy; 2023 GeoGuess Challenge. Tous droits réservés.
+    </footer>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
+        // Le code JavaScript reste le même que dans la version précédente
         var map = L.map('map', {
             center: [0, 0],
             zoom: 2,
@@ -108,7 +131,7 @@
         }).addTo(map);
 
         function getRandomLatLng() {
-            var lat = (Math.random() * 140) - 70; // Limité à ±70 pour éviter les pôles
+            var lat = (Math.random() * 140) - 70;
             var lng = (Math.random() * 360) - 180;
             return [lat, lng];
         }
@@ -127,13 +150,13 @@
         ];
 
         function calculateDistanceAndAngle(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Rayon de la Terre en km
+            const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
-            let dLon = (lon2 - lon1) * Math.PI / 180;
+            let dLon = (lon2 - lon1);
 
-            // Ajuster la longitude pour toujours prendre le chemin le plus court
-            if (dLon > Math.PI) dLon -= 2 * Math.PI;
-            if (dLon < -Math.PI) dLon += 2 * Math.PI;
+            if (dLon > 180) dLon -= 360;
+            if (dLon < -180) dLon += 360;
+            dLon = dLon * Math.PI / 180;
 
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
                       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
@@ -146,7 +169,7 @@
                 Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
                 Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon)
             ) * 180 / Math.PI;
-            angle = (angle + 360) % 360; // Normaliser l'angle entre 0 et 360 degrés
+            angle = (angle + 360) % 360;
 
             return {distance, angle};
         }
@@ -178,10 +201,9 @@
             });
         }
 
-        // Ajouter le cercle rouge sur la carte
         L.circle(centralPoint, {
-            color: 'red',
-            fillColor: '#f03',
+            color: '#e74c3c',
+            fillColor: '#e74c3c',
             fillOpacity: 0.5,
             radius: 200000
         }).addTo(map);
@@ -192,7 +214,7 @@
             var userLatLng = [e.latlng.lat, e.latlng.lng];
             var result = calculateDistanceAndAngle(userLatLng[0], userLatLng[1], centralPoint[0], centralPoint[1]);
             var distance = result.distance;
-            var score = Math.max(0, 1000 - Math.round(distance / 10)); // Ajuster l'échelle des points
+            var score = Math.max(0, 1000 - Math.round(distance / 10));
 
             L.marker(userLatLng).addTo(map)
                 .bindPopup('Votre réponse')
@@ -201,7 +223,6 @@
             document.getElementById('score').innerText = "Distance: " + Math.round(distance) + " km | Score: " + score;
         });
 
-        // Limiter la vue de la carte
         map.setMaxBounds([[-90, -180], [90, 180]]);
     </script>
 </body>

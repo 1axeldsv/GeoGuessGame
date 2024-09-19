@@ -99,9 +99,14 @@
 
             // Calculer le score basé sur la distance
             var maxPoints = 1000;
-            var pointsLostPerKm = 2; // On perd 2 points par kilomètre
-            var pointsLost = Math.min(distance * pointsLostPerKm, maxPoints); // Limiter la perte à 1000 points max
-            var score = maxPoints - pointsLost;
+            var maxDistance = 6000; // Distance maximale pour avoir un score
+            var score;
+
+            if (distance > maxDistance) {
+                score = 0; // Si la distance dépasse 6000 km, score = 0
+            } else {
+                score = maxPoints * (1 - (distance / maxDistance));
+            }
 
             // Afficher la distance et le score
             document.getElementById('score').innerText = "Distance au point central : " + Math.round(distance) + " km. Score : " + Math.round(score) + " points.";

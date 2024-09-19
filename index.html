@@ -96,12 +96,15 @@
             zoomControl: true,
             scrollWheelZoom: true,
             dragging: true,
-            attributionControl: false
+            attributionControl: false,
+            worldCopyJump: false
         });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 6,
-            minZoom: 2
+            minZoom: 2,
+            noWrap: true,
+            bounds: [[-90, -180], [90, 180]]
         }).addTo(map);
 
         function getRandomLatLng() {
@@ -126,18 +129,23 @@
         function calculateDistanceAndAngle(lat1, lon1, lat2, lon2) {
             const R = 6371; // Rayon de la Terre en km
             const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
+            let dLon = (lon2 - lon1) * Math.PI / 180;
+
+            // Ajuster la longitude pour toujours prendre le chemin le plus court
+            if (dLon > Math.PI) dLon -= 2 * Math.PI;
+            if (dLon < -Math.PI) dLon += 2 * Math.PI;
+
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             const distance = R * c;
 
-            const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180);
-            const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) - 
-                      Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon);
-            let angle = Math.atan2(y, x) * 180 / Math.PI;
+            let angle = Math.atan2(
+                Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180),
+                Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+                Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon)
+            ) * 180 / Math.PI;
             angle = (angle + 360) % 360; // Normaliser l'angle entre 0 et 360 degrés
 
             return {distance, angle};
@@ -192,6 +200,9 @@
 
             document.getElementById('score').innerText = "Distance: " + Math.round(distance) + " km | Score: " + score;
         });
+
+        // Limiter la vue de la carte
+        map.setMaxBounds([[-90, -180], [90, 180]]);
     </script>
 </body>
 </html>

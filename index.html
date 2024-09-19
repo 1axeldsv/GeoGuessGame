@@ -99,7 +99,7 @@
 
             // Calculer le score basé sur la distance
             var maxPoints = 1000;
-            var pointsLostPerKm = 10;
+            var pointsLostPerKm = 2; // On perd 2 points par kilomètre
             var pointsLost = Math.min(distance * pointsLostPerKm, maxPoints); // Limiter la perte à 1000 points max
             var score = maxPoints - pointsLost;
 

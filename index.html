@@ -123,40 +123,39 @@
             { name: "Cairo", coords: [30.0444, 31.2357] }
         ];
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            var R = 6371;
-            var dLat = (lat2 - lat1) * Math.PI / 180;
-            var dLon = (lon2 - lon1) * Math.PI / 180;
-            var a = 
-                0.5 - Math.cos(dLat)/2 + 
+        function calculateDistanceAndAngle(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Rayon de la Terre en km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
                 Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                (1 - Math.cos(dLon)) / 2;
-            return R * 2 * Math.asin(Math.sqrt(a));
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+
+            const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180);
+            const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) - 
+                      Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon);
+            let angle = Math.atan2(y, x) * 180 / Math.PI;
+            angle = (angle + 360) % 360; // Normaliser l'angle entre 0 et 360 degrés
+
+            return {distance, angle};
         }
 
         function createCircle(cities, centralPoint) {
             var circle = document.getElementById('circle');
             var radius = 140;
 
-            function getPolarCoords(lat1, lon1, lat2, lon2) {
-                var dLon = (lon2 - lon1) * Math.PI / 180;
-                var lat1Rad = lat1 * Math.PI / 180;
-                var lat2Rad = lat2 * Math.PI / 180;
-                var y = Math.sin(dLon) * Math.cos(lat2Rad);
-                var x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLon);
-                var angle = Math.atan2(y, x);
-                return [(angle + 2 * Math.PI) % (2 * Math.PI), calculateDistance(lat1, lon1, lat2, lon2)];
-            }
-
             circle.innerHTML = '';
 
             cities.forEach(function(city) {
-                var polarCoords = getPolarCoords(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
-                var angle = polarCoords[0];
-                var distance = polarCoords[1];
+                var result = calculateDistanceAndAngle(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
+                var angle = result.angle;
+                var distance = result.distance;
 
-                var x = radius * Math.sin(angle) + 150;
-                var y = -radius * Math.cos(angle) + 150;
+                var x = radius * Math.sin(angle * Math.PI / 180) + 150;
+                var y = -radius * Math.cos(angle * Math.PI / 180) + 150;
 
                 var cityDiv = document.createElement('div');
                 cityDiv.className = 'city';
@@ -183,14 +182,15 @@
 
         map.on('click', function(e) {
             var userLatLng = [e.latlng.lat, e.latlng.lng];
-            var distance = calculateDistance(userLatLng[0], userLatLng[1], centralPoint[0], centralPoint[1]);
-            var score = Math.max(0, 1000 - (distance / 6)); // Ajuster l'échelle des points
+            var result = calculateDistanceAndAngle(userLatLng[0], userLatLng[1], centralPoint[0], centralPoint[1]);
+            var distance = result.distance;
+            var score = Math.max(0, 1000 - Math.round(distance / 10)); // Ajuster l'échelle des points
 
             L.marker(userLatLng).addTo(map)
                 .bindPopup('Votre réponse')
                 .openPopup();
 
-            document.getElementById('score').innerText = "Distance: " + Math.round(distance) + " km | Score: " + Math.round(score);
+            document.getElementById('score').innerText = "Distance: " + Math.round(distance) + " km | Score: " + score;
         });
     </script>
 </body>

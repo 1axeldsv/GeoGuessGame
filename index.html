@@ -20,6 +20,7 @@
         #map {
             height: 400px;
             width: 50%;
+            border: 1px solid #ccc;
         }
         #circle-container {
             position: relative;
@@ -69,11 +70,19 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         // Initialiser la carte et la centrer sur une zone par défaut
-        var map = L.map('map').setView([20, 0], 2); // Zoom sur le monde
+        var map = L.map('map', {
+            center: [0, 0],
+            zoom: 2,
+            zoomControl: false, // Désactiver les contrôles de zoom
+            scrollWheelZoom: false, // Désactiver le zoom par molette
+            dragging: false, // Désactiver le déplacement de la carte
+            attributionControl: false // Désactiver le contrôle d'attribution
+        });
 
-        // Ajouter les tuiles OpenStreetMap
+        // Ajouter les tuiles OpenStreetMap avec un style simple
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            maxZoom: 3, // Limiter le zoom pour garder le style planisphère
+            minZoom: 2
         }).addTo(map);
 
         // Fonction pour générer des coordonnées aléatoires
@@ -85,19 +94,6 @@
 
         // Point central aléatoire
         var centralPoint = getRandomLatLng();
-
-        // Ajouter un cercle sur le point central (invisible pour l'utilisateur)
-        var circle = L.circle(centralPoint, {
-            color: 'red',
-            fillColor: '#f03',
-            fillOpacity: 0.5,
-            radius: 500000 // Rayon du cercle en mètres
-        }).addTo(map);
-
-        // Centrer la carte sur le point central
-        map.setView(centralPoint, 4);
-
-        console.log("Point central:", centralPoint);
 
         // Grandes villes pour le cercle
         var cities = [
@@ -157,8 +153,8 @@
 
         // Quand l'utilisateur clique sur la carte, calculer la distance au point central
         map.on('click', function(e) {
-            var userLatLng = e.latlng; // Coordonnées du point cliqué par l'utilisateur
-            var distance = calculateDistance(userLatLng.lat, userLatLng.lng, centralPoint[0], centralPoint[1]);
+            var userLatLng = [e.latlng.lat, e.latlng.lng]; // Coordonnées du point cliqué par l'utilisateur
+            var distance = calculateDistance(userLatLng[0], userLatLng[1], centralPoint[0], centralPoint[1]);
 
             // Calculer le score basé sur la distance
             var maxPoints = 1000;
@@ -175,7 +171,7 @@
             document.getElementById('score').innerText = "Distance au point central : " + Math.round(distance) + " km. Score : " + Math.round(score) + " points.";
 
             // Ajouter un marqueur pour l'emplacement choisi
-            L.marker([userLatLng.lat, userLatLng.lng]).addTo(map)
+            L.marker([userLatLng[0], userLatLng[1]]).addTo(map)
                 .bindPopup("Vous avez choisi cet endroit.")
                 .openPopup();
         });

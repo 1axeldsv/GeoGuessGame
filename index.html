@@ -18,14 +18,14 @@
             margin: 20px;
         }
         #map {
-            height: 400px;
-            width: 50%;
+            height: 500px; /* Ajustez la hauteur selon vos besoins */
+            width: 60%;
             border: 1px solid #ccc;
         }
         #circle-container {
             position: relative;
-            width: 40%;
-            height: 400px;
+            width: 30%;
+            height: 500px; /* Ajustez la hauteur pour correspondre à la carte */
             margin-left: 20px;
             display: flex;
             justify-content: center;
@@ -47,6 +47,7 @@
             border-radius: 3px;
             padding: 2px;
             border: 1px solid blue;
+            white-space: nowrap;
         }
         #score {
             margin-top: 20px;
@@ -72,17 +73,19 @@
         // Initialiser la carte et la centrer sur une zone par défaut
         var map = L.map('map', {
             center: [0, 0],
-            zoom: 2,
-            zoomControl: false, // Désactiver les contrôles de zoom
-            scrollWheelZoom: false, // Désactiver le zoom par molette
-            dragging: false, // Désactiver le déplacement de la carte
+            zoom: 1, // Zoom initial pour afficher le globe entier
+            minZoom: 1, // Zoom minimum pour montrer le globe entier
+            maxZoom: 6, // Augmenter le zoom maximum pour plus de détails
+            zoomControl: true, // Réactiver les contrôles de zoom
+            scrollWheelZoom: true, // Réactiver le zoom par molette
+            dragging: true, // Réactiver le déplacement de la carte
             attributionControl: false // Désactiver le contrôle d'attribution
         });
 
         // Ajouter les tuiles OpenStreetMap avec un style simple
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 3, // Limiter le zoom pour garder le style planisphère
-            minZoom: 2
+            maxZoom: 6, // Ajuster le zoom maximum pour garder le style planisphère
+            minZoom: 1
         }).addTo(map);
 
         // Fonction pour générer des coordonnées aléatoires
@@ -124,11 +127,21 @@
             var circle = document.getElementById('circle');
             var radius = 150; // Rayon du cercle en pixels
 
-            cities.forEach(function(city, index) {
-                // Calculer l'angle pour les 8 points
-                var angle = (360 / cities.length) * index; // Angle en degrés
+            // Fonction pour convertir des coordonnées géographiques en coordonnées polaires
+            function getPolarCoords(lat1, lon1, lat2, lon2) {
+                var dLon = lon2 - lon1;
+                var y = Math.sin(dLon) * Math.cos(lat2);
+                var x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+                var angle = Math.atan2(y, x);
+                return [angle * 180 / Math.PI, calculateDistance(lat1, lon1, lat2, lon2)];
+            }
 
-                // Convertir l'angle en coordonnées polaires
+            cities.forEach(function(city) {
+                var polarCoords = getPolarCoords(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
+                var angle = polarCoords[0]; // Angle en degrés
+                var distance = polarCoords[1]; // Distance en km
+
+                // Convertir l'angle en coordonnées polaires pour le placement sur le cercle
                 var x = radius * Math.cos(angle * Math.PI / 180) + radius;
                 var y = radius * Math.sin(angle * Math.PI / 180) + radius;
 
@@ -137,7 +150,7 @@
                 cityDiv.className = 'city';
                 cityDiv.style.left = x + 'px';
                 cityDiv.style.top = y + 'px';
-                cityDiv.innerText = city.name + " (" + Math.round(calculateDistance(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1])) + " km)";
+                cityDiv.innerText = city.name + " (" + Math.round(distance) + " km)";
 
                 circle.appendChild(cityDiv);
 

@@ -90,8 +90,8 @@
     <script>
         var map = L.map('map', {
             center: [0, 0],
-            zoom: 1,
-            minZoom: 1,
+            zoom: 2,
+            minZoom: 2,
             maxZoom: 6,
             zoomControl: true,
             scrollWheelZoom: true,
@@ -101,11 +101,11 @@
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 6,
-            minZoom: 1
+            minZoom: 2
         }).addTo(map);
 
         function getRandomLatLng() {
-            var lat = (Math.random() * 180) - 90;
+            var lat = (Math.random() * 140) - 70; // Limité à ±70 pour éviter les pôles
             var lng = (Math.random() * 360) - 180;
             return [lat, lng];
         }
@@ -136,7 +136,7 @@
 
         function createCircle(cities, centralPoint) {
             var circle = document.getElementById('circle');
-            var radius = 140; // Légèrement réduit pour laisser de la place aux noms des villes
+            var radius = 140;
 
             function getPolarCoords(lat1, lon1, lat2, lon2) {
                 var dLon = (lon2 - lon1) * Math.PI / 180;
@@ -150,17 +150,6 @@
 
             circle.innerHTML = '';
 
-            // Ajouter un point central au cercle
-            var centerPoint = document.createElement('div');
-            centerPoint.style.position = 'absolute';
-            centerPoint.style.left = '150px';
-            centerPoint.style.top = '150px';
-            centerPoint.style.width = '6px';
-            centerPoint.style.height = '6px';
-            centerPoint.style.borderRadius = '50%';
-            centerPoint.style.backgroundColor = 'red';
-            circle.appendChild(centerPoint);
-
             cities.forEach(function(city) {
                 var polarCoords = getPolarCoords(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
                 var angle = polarCoords[0];
@@ -168,18 +157,6 @@
 
                 var x = radius * Math.sin(angle) + 150;
                 var y = -radius * Math.cos(angle) + 150;
-
-                // Ajouter une ligne du centre vers la ville
-                var line = document.createElement('div');
-                line.style.position = 'absolute';
-                line.style.left = '150px';
-                line.style.top = '150px';
-                line.style.width = '1px';
-                line.style.height = radius + 'px';
-                line.style.backgroundColor = '#3498db';
-                line.style.transform = `rotate(${angle}rad)`;
-                line.style.transformOrigin = 'top';
-                circle.appendChild(line);
 
                 var cityDiv = document.createElement('div');
                 cityDiv.className = 'city';
@@ -193,6 +170,14 @@
                     .bindPopup(city.name);
             });
         }
+
+        // Ajouter le cercle rouge sur la carte
+        L.circle(centralPoint, {
+            color: 'red',
+            fillColor: '#f03',
+            fillOpacity: 0.5,
+            radius: 200000
+        }).addTo(map);
 
         createCircle(cities, centralPoint);
 

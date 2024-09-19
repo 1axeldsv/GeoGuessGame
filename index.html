@@ -36,6 +36,44 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+
+        // Fonction pour générer des coordonnées aléatoires
+        function getRandomLatLng() {
+            var lat = (Math.random() * 180) - 90; // Latitude entre -90 et 90
+            var lng = (Math.random() * 360) - 180; // Longitude entre -180 et 180
+            return [lat, lng];
+        }
+
+        // Point central aléatoire
+        var centralPoint = getRandomLatLng();
+
+        // Ajouter un cercle sur le point central (invisible pour l'utilisateur)
+        var circle = L.circle(centralPoint, {
+            color: 'red',
+            fillColor: '#f03',
+            fillOpacity: 0.5,
+            radius: 500000 // Rayon du cercle en mètres
+        }).addTo(map);
+
+        // Centrer la carte sur le point central
+        map.setView(centralPoint, 4);
+
+        console.log("Point central:", centralPoint);
+
+        // Grandes villes
+        var cities = [
+            { name: "New York", coords: [40.7128, -74.0060] },
+            { name: "Tokyo", coords: [35.6762, 139.6503] },
+            { name: "Paris", coords: [48.8566, 2.3522] },
+            { name: "Sydney", coords: [-33.8688, 151.2093] }
+        ];
+
+        // Ajouter des marqueurs pour les villes
+        cities.forEach(function(city) {
+            L.marker(city.coords).addTo(map)
+                .bindPopup(city.name)
+                .openPopup();
+        });
     </script>
 </body>
 </html>

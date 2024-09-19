@@ -21,18 +21,22 @@
             height: 400px;
             width: 50%;
         }
-        #circle {
+        #circle-container {
+            position: relative;
             width: 40%;
             height: 400px;
-            position: relative;
             margin-left: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #circle {
+            position: absolute;
             border-radius: 50%;
             border: 2px solid blue;
             background: rgba(0, 0, 255, 0.1);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 300px; /* Ajustez selon vos besoins */
+            height: 300px; /* Ajustez selon vos besoins */
         }
         .city {
             position: absolute;
@@ -55,7 +59,9 @@
     <h1>GeoGuess : Trouvez le point central !</h1>
     <div id="container">
         <div id="map"></div>
-        <div id="circle"></div>
+        <div id="circle-container">
+            <div id="circle"></div>
+        </div>
     </div>
     <div id="score">Cliquez sur la carte pour choisir un emplacement.</div>
 

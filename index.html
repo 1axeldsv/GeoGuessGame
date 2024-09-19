@@ -26,11 +26,19 @@
             height: 400px;
             position: relative;
             margin-left: 20px;
+            border-radius: 50%;
+            border: 2px solid blue;
+            background: rgba(0, 0, 255, 0.1);
+            overflow: hidden;
         }
         .city {
             position: absolute;
             font-size: 14px;
             transform: translate(-50%, -50%);
+            background-color: white;
+            border-radius: 3px;
+            padding: 2px;
+            border: 1px solid blue;
         }
         #score {
             margin-top: 20px;
@@ -109,19 +117,27 @@
         // Fonction pour ajouter la rosace avec les villes
         function createRosace(cities, centralPoint) {
             var rosace = document.getElementById('rosace');
-            var radius = 200; // Rayon de la rosace en pixels
-            var angleStep = 360 / cities.length;
+            var radius = 150; // Rayon de la rosace en pixels
 
             cities.forEach(function(city, index) {
-                var angle = angleStep * index; // Angle pour chaque ville
+                // Calculer l'angle entre le point central et la ville
+                var lat1 = centralPoint[0];
+                var lon1 = centralPoint[1];
+                var lat2 = city.coords[0];
+                var lon2 = city.coords[1];
+                var angle = Math.atan2(lon2 - lon1, lat2 - lat1) * 180 / Math.PI;
+                angle = (angle + 360) % 360; // Ajuster pour les angles négatifs
+
+                // Convertir l'angle en coordonnées polaires
                 var x = radius * Math.cos(angle * Math.PI / 180) + radius;
                 var y = radius * Math.sin(angle * Math.PI / 180) + radius;
 
+                // Créer et ajouter le div pour la ville
                 var cityDiv = document.createElement('div');
                 cityDiv.className = 'city';
                 cityDiv.style.left = x + 'px';
                 cityDiv.style.top = y + 'px';
-                cityDiv.innerText = city.name;
+                cityDiv.innerText = city.name + " (" + Math.round(calculateDistance(lat1, lon1, lat2, lon2)) + " km)";
 
                 rosace.appendChild(cityDiv);
 

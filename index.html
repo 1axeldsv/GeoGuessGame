@@ -62,7 +62,15 @@
             font-size: 12px;
             white-space: nowrap;
         }
-        #score {
+        #north-indicator {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #3498db;
+        }
+        #score, #round {
             margin-top: 20px;
             font-size: 1.2em;
             font-weight: 600;
@@ -71,6 +79,17 @@
             padding: 10px 20px;
             border-radius: 25px;
             text-align: center;
+        }
+        #next-round {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: 600;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-align: center;
+            cursor: pointer;
         }
         footer {
             background-color: #34495e;
@@ -88,8 +107,12 @@
     <div id="container">
         <div id="cesiumContainer"></div>
         <div id="infoPanel">
-            <div id="compass"></div>
-            <div id="score">Cliquez sur le globe pour jouer !</div>
+            <div id="compass">
+                <div id="north-indicator">N</div>
+            </div>
+            <div id="round">Round: 1</div>
+            <div id="score">Score: 0</div>
+            <div id="next-round" style="display: none;">Prochain Round</div>
         </div>
     </div>
     <footer>
@@ -132,13 +155,25 @@
             { name: "Cape Town", coords: [-33.9249, 18.4241] }
         ];
 
+        let centralPoint;
+        let roundNumber = 1;
+        let totalScore = 0;
+
         function getRandomLatLng() {
             const lat = (Math.random() * 140) - 70;
             const lng = (Math.random() * 360) - 180;
             return [lat, lng];
         }
 
-        const centralPoint = getRandomLatLng();
+        function startNewRound() {
+            viewer.entities.removeAll();
+            centralPoint = getRandomLatLng();
+            addCentralPoint(centralPoint);
+            updateCompass();
+            document.getElementById('round').innerText = `Round: ${roundNumber}`;
+            document.getElementById('score').innerText = `Score: ${totalScore}`;
+            document.getElementById('next-round').style.display = 'none';
+        }
 
         function addCentralPoint(position) {
             viewer.entities.add({
@@ -147,25 +182,6 @@
                     pixelSize: 10,
                     color: Cesium.Color.RED
                 }
-            });
-        }
-
-        function addCityMarkers() {
-            cities.forEach(city => {
-                viewer.entities.add({
-                    position: Cesium.Cartesian3.fromDegrees(city.coords[1], city.coords[0]),
-                    point: {
-                        pixelSize: 5,
-                        color: Cesium.Color.BLUE
-                    },
-                    label: {
-                        text: city.name,
-                        font: '14pt sans-serif',
-                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                        pixelOffset: new Cesium.Cartesian2(0, -10)
-                    }
-                });
             });
         }
 
@@ -192,8 +208,11 @@
 
         function updateCompass() {
             const compass = document.getElementById('compass');
-            compass.innerHTML = '';
-            cities.forEach(city => {
+            compass.innerHTML = '<div id="north-indicator">N</div>';
+            
+            const displayedCities = cities.sort(() => 0.5 - Math.random()).slice(0, 6);
+            
+            displayedCities.forEach(city => {
                 const distance = calculateDistance(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
                 const bearing = calculateBearing(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
                 const x = 150 + 140 * Math.sin(bearing * Math.PI / 180);
@@ -208,10 +227,6 @@
             });
         }
 
-        addCentralPoint(centralPoint);
-        addCityMarkers();
-        updateCompass();
-
         const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
         handler.setInputAction(function(click) {
             const pickedLocation = viewer.scene.pickPosition(click.position);
@@ -221,7 +236,8 @@
                 const latitude = Cesium.Math.toDegrees(cartographic.latitude);
                 
                 const distance = calculateDistance(centralPoint[0], centralPoint[1], latitude, longitude);
-                const score = Math.max(0, 1000 - Math.round(distance / 10));
+                const roundScore = Math.max(0, 1000 - Math.round(distance / 10));
+                totalScore += roundScore;
 
                 viewer.entities.add({
                     position: pickedLocation,
@@ -231,9 +247,17 @@
                     }
                 });
 
-                document.getElementById('score').innerText = `Distance: ${Math.round(distance)} km | Score: ${score}`;
+                document.getElementById('score').innerText = `Score: ${totalScore} (+${roundScore})`;
+                document.getElementById('next-round').style.display = 'block';
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+        document.getElementById('next-round').addEventListener('click', function() {
+            roundNumber++;
+            startNewRound();
+        });
+
+        startNewRound();
     </script>
 </body>
 </html>

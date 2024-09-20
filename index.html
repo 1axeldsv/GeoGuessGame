@@ -16,7 +16,8 @@
             color: #333;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            min-height: 100vh;
+            overflow-y: auto;
         }
         header {
             background-color: #3498db;
@@ -35,6 +36,7 @@
             flex-direction: column;
             flex-grow: 1;
             overflow: hidden;
+            max-height: calc(100vh - 60px);
         }
         #infoPanel {
             padding: 10px;
@@ -43,6 +45,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-y: auto;
+            max-height: 40vh;
         }
         #compass {
             width: 250px;
@@ -83,14 +87,14 @@
             background-color: #3498db;
             color: white;
             padding: 5px 10px;
-            border-radius: 15px;            
+            border-radius: 15px;
             text-align: center;
             cursor: pointer;
         }
         #cesiumContainer {
             flex-grow: 1;
             width: 100%;
-            height: 50vh;
+            height: 60vh;
         }
         footer {
             background-color: #34495e;
@@ -103,11 +107,12 @@
         @media (min-width: 768px) {
             #container {
                 flex-direction: row;
+                max-height: none;
             }
             #infoPanel {
                 width: 30%;
                 height: calc(100vh - 60px);
-                overflow-y: auto;
+                max-height: none;
             }
             #cesiumContainer {
                 width: 70%;
@@ -147,8 +152,7 @@
         <div id="cesiumContainer"></div>
     </div>
     <footer>&copy; 2023 GeoGuess France. Tous droits réservés.</footer>
-
-    <script>
+        <script>
         Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZWM3NmE3NC01MGVkLTRhMWMtOWU0My02OTJlYTNjY2RjY2MiLCJpZCI6MjQyOTUzLCJpYXQiOjE3MjY4Mzk3ODR9.lfT5koGpWQ2X_--BkP0fmqhKF21MM0capewARRO7i9o';
 
         const viewer = new Cesium.Viewer('cesiumContainer', {
@@ -214,7 +218,7 @@
         }
 
         function addCentralPoint(position) {
-            const entity = viewer.entities.add({
+            viewer.entities.add({
                 position: Cesium.Cartesian3.fromDegrees(position[1], position[0]),
                 point: {
                     pixelSize: 10,
@@ -222,7 +226,6 @@
                     scaleByDistance: new Cesium.NearFarScalar(1.5e2, 2.0, 1.5e7, 0.5)
                 }
             });
-
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {

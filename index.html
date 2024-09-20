@@ -70,7 +70,7 @@
             font-weight: bold;
             color: #3498db;
         }
-        #score, #round {
+        #cityToGuess, #score, #round {
             margin-top: 20px;
             font-size: 1.2em;
             font-weight: 600;
@@ -110,6 +110,7 @@
             <div id="compass">
                 <div id="north-indicator">N</div>
             </div>
+            <div id="cityToGuess"></div>
             <div id="round">Round: 1</div>
             <div id="score">Score: 0</div>
             <div id="next-round" style="display: none;">Prochain Round</div>
@@ -175,21 +176,11 @@
         function startNewRound() {
             viewer.entities.removeAll();
             centralCity = frenchCities[Math.floor(Math.random() * frenchCities.length)];
-            addCentralPoint(centralCity.coords);
+            document.getElementById('cityToGuess').innerText = `Trouvez : ${centralCity.name}`;
             updateCompass();
             document.getElementById('round').innerText = `Round: ${roundNumber}`;
             document.getElementById('score').innerText = `Score: ${totalScore}`;
             document.getElementById('next-round').style.display = 'none';
-        }
-
-        function addCentralPoint(position) {
-            viewer.entities.add({
-                position: Cesium.Cartesian3.fromDegrees(position[1], position[0]),
-                point: {
-                    pixelSize: 10,
-                    color: Cesium.Color.RED
-                }
-            });
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -224,8 +215,10 @@
             displayedCities.forEach(city => {
                 const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
                 const bearing = calculateBearing(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
-                const x = 150 + 140 * Math.sin(bearing * Math.PI / 180);
-                const y = 150 - 140 * Math.cos(bearing * Math.PI / 180);
+                
+                const radius = 140;
+                const x = 150 + radius * Math.sin(bearing * Math.PI / 180);
+                const y = 150 - radius * Math.cos(bearing * Math.PI / 180);
                 
                 const cityMarker = document.createElement('div');
                 cityMarker.className = 'city-marker';
@@ -249,9 +242,17 @@
                 totalScore += roundScore;
 
                 viewer.entities.add({
+                    position: Cesium.Cartesian3.fromDegrees(centralCity.coords[1], centralCity.coords[0]),
+                    point: {
+                        pixelSize: 10,
+                        color: Cesium.Color.RED
+                    }
+                });
+
+                viewer.entities.add({
                     position: pickedLocation,
                     point: {
-                        pixelSize: 5,
+                        pixelSize: 10,
                         color: Cesium.Color.GREEN
                     }
                 });

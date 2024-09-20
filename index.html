@@ -66,7 +66,7 @@
             font-weight: bold;
             color: #3498db;
         }
-        #score, #round {
+        #score, #round, #clicks-left {
             margin-top: 10px;
             font-size: 1em;
             font-weight: 600;
@@ -83,7 +83,7 @@
             background-color: #3498db;
             color: white;
             padding: 5px 10px;
-            border-radius: 15px;
+            border-radius: 15px;            
             text-align: center;
             cursor: pointer;
         }
@@ -123,7 +123,7 @@
             h1 {
                 font-size: 2em;
             }
-            #score, #round, #next-round {
+            #score, #round, #clicks-left, #next-round {
                 font-size: 1.2em;
                 padding: 10px 20px;
             }
@@ -139,8 +139,9 @@
             <div id="compass">
                 <div id="north-indicator">N</div>
             </div>
-            <div id="round">Round: 1</div>
+            <div id="round">Round: 1/6</div>
             <div id="score">Score: 0</div>
+            <div id="clicks-left">Clics restants: 1</div>
             <div id="next-round" style="display: none;">Prochain Round</div>
         </div>
         <div id="cesiumContainer"></div>
@@ -162,7 +163,6 @@
             baseLayerPicker: false
         });
 
-        // Limiter la vue à la France
         viewer.camera.setView({
             destination: Cesium.Rectangle.fromDegrees(-5.0, 41.0, 10.0, 51.5)
         });
@@ -199,25 +199,31 @@
         let centralCity;
         let roundNumber = 1;
         let totalScore = 0;
+        let clicksLeft = 1;
+        const TOTAL_ROUNDS = 6;
 
         function startNewRound() {
             viewer.entities.removeAll();
             centralCity = frenchCities[Math.floor(Math.random() * frenchCities.length)];
-            addCentralPoint(centralCity.coords);
             updateCompass();
-            document.getElementById('round').innerText = `Round: ${roundNumber}`;
+            document.getElementById('round').innerText = `Round: ${roundNumber}/${TOTAL_ROUNDS}`;
             document.getElementById('score').innerText = `Score: ${totalScore}`;
+            document.getElementById('clicks-left').innerText = `Clics restants: ${clicksLeft}`;
             document.getElementById('next-round').style.display = 'none';
+            clicksLeft = 1;
         }
 
         function addCentralPoint(position) {
-            viewer.entities.add({
+            const entity = viewer.entities.add({
                 position: Cesium.Cartesian3.fromDegrees(position[1], position[0]),
                 point: {
                     pixelSize: 10,
-                    color: Cesium.Color.RED
+                    color: Cesium.Color.RED,
+                    scaleByDistance: new Cesium.NearFarScalar(1.5e2, 2.0, 1.5e7, 0.5)
                 }
             });
+
+            viewer.zoomTo(entity, new Cesium.HeadingPitchRange(0, -Cesium.Math.PI_OVER_FOUR, 2000));
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -272,33 +278,46 @@
 
         const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
         handler.setInputAction(function(click) {
-            const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
-            if (cartesian) {
-                const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-                const longitude = Cesium.Math.toDegrees(cartographic.longitude);
-                const latitude = Cesium.Math.toDegrees(cartographic.latitude);
-                
-                const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], latitude, longitude);
-                const maxDistance = 1000; // Distance maximale en km pour obtenir des points
-                const roundScore = Math.max(0, Math.round(1000 * Math.exp(-distance / 100)));
-                totalScore += roundScore;
+            if (clicksLeft > 0) {
+                const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
+                if (cartesian) {
+                    const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+                    const longitude = Cesium.Math.toDegrees(cartographic.longitude);
+                    const latitude = Cesium.Math.toDegrees(cartographic.latitude);
+                    
+                    const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], latitude, longitude);
+                    const maxDistance = 1000;
+                    const roundScore = Math.max(0, Math.round(1000 * Math.exp(-distance / 100)));
+                    totalScore += roundScore;
 
-                viewer.entities.add({
-                    position: cartesian,
-                    point: {
-                        pixelSize: 10,
-                        color: Cesium.Color.GREEN
-                    }
-                });
+                    viewer.entities.add({
+                        position: cartesian,
+                        point: {
+                            pixelSize: 10,
+                            color: Cesium.Color.GREEN
+                        }
+                    });
 
-                document.getElementById('score').innerText = `Score: ${totalScore} (+${roundScore})`;
-                document.getElementById('next-round').style.display = 'block';
+                    addCentralPoint(centralCity.coords);
+
+                    document.getElementById('score').innerText = `Score: ${totalScore} (+${roundScore})`;
+                    document.getElementById('next-round').style.display = 'block';
+                    clicksLeft--;
+                    document.getElementById('clicks-left').innerText = `Clics restants: ${clicksLeft}`;
+                }
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
         document.getElementById('next-round').addEventListener('click', function() {
             roundNumber++;
-            startNewRound();
+            if (roundNumber <= TOTAL_ROUNDS) {
+                startNewRound();
+            } else {
+                alert(`Jeu terminé! Votre score final est: ${totalScore}`);
+                roundNumber = 1;
+                totalScore = 0;
+                startNewRound();
+            }
         });
 
         startNewRound();

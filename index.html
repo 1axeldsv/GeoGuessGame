@@ -21,13 +21,13 @@
         header {
             background-color: #3498db;
             color: white;
-            padding: 20px 0;
+            padding: 10px 0;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         h1 {
             margin: 0;
-            font-size: 2.5em;
+            font-size: 2em;
             font-weight: 600;
         }
         #container {
@@ -37,7 +37,7 @@
         }
         #cesiumContainer {
             width: 70%;
-            height: calc(100vh - 100px); /* Ajusté pour s'adapter à l'écran sans défilement */
+            height: calc(100vh - 60px);
         }
         #infoPanel {
             width: 30%;
@@ -45,16 +45,22 @@
             background-color: white;
             box-shadow: -2px 0 5px rgba(0,0,0,0.1);
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
-        #cityList {
-            list-style-type: none;
-            padding: 0;
+        #compass {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 2px solid #3498db;
+            position: relative;
+            margin: 0 auto 20px;
         }
-        #cityList li {
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #f0f2f5;
-            border-radius: 5px;
+        .city-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            white-space: nowrap;
         }
         #score {
             margin-top: 20px;
@@ -70,7 +76,7 @@
             background-color: #34495e;
             color: white;
             text-align: center;
-            padding: 10px 0;
+            padding: 5px 0;
             font-size: 0.9em;
         }
     </style>
@@ -82,7 +88,7 @@
     <div id="container">
         <div id="cesiumContainer"></div>
         <div id="infoPanel">
-            <ul id="cityList"></ul>
+            <div id="compass"></div>
             <div id="score">Cliquez sur le globe pour jouer !</div>
         </div>
     </div>
@@ -105,9 +111,9 @@
             baseLayerPicker: false
         });
 
-        // Désactive la rotation automatique et autres contrôles non désirés
-        viewer.scene.screenSpaceCameraController.enableRotate = false;
-        viewer.scene.screenSpaceCameraController.enableTranslate = false;
+        // Réactiver la rotation et le panoramique
+        viewer.scene.screenSpaceCameraController.enableRotate = true;
+        viewer.scene.screenSpaceCameraController.enableTranslate = true;
         viewer.scene.screenSpaceCameraController.enableZoom = true;
         viewer.scene.screenSpaceCameraController.enableTilt = false;
         viewer.scene.screenSpaceCameraController.enableLook = false;
@@ -172,20 +178,36 @@
             return R * c;
         }
 
-        function updateCityList() {
-            const cityList = document.getElementById('cityList');
-            cityList.innerHTML = '';
+        function calculateBearing(lat1, lon1, lat2, lon2) {
+            const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+            const x = Math.cos(lat1) * Math.sin(lat2) -
+                      Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+            const θ = Math.atan2(y, x);
+            const bearing = (θ * 180 / Math.PI + 360) % 360;
+            return bearing;
+        }
+
+        function updateCompass() {
+            const compass = document.getElementById('compass');
+            compass.innerHTML = '';
             cities.forEach(city => {
                 const distance = calculateDistance(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
-                const li = document.createElement('li');
-                li.textContent = `${city.name}: ${Math.round(distance)} km`;
-                cityList.appendChild(li);
+                const bearing = calculateBearing(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
+                const x = 150 + 140 * Math.sin(bearing * Math.PI / 180);
+                const y = 150 - 140 * Math.cos(bearing * Math.PI / 180);
+                
+                const cityMarker = document.createElement('div');
+                cityMarker.className = 'city-marker';
+                cityMarker.style.left = `${x}px`;
+                cityMarker.style.top = `${y}px`;
+                cityMarker.innerHTML = `${city.name}<br>${Math.round(distance)} km`;
+                compass.appendChild(cityMarker);
             });
         }
 
         addCentralPoint(centralPoint);
         addCityMarkers();
-        updateCityList();
+        updateCompass();
 
         const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
         handler.setInputAction(function(click) {

@@ -8,167 +8,338 @@
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
-        /* ... (styles inchangés) ... */
+        /* Styles CSS inchangés */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        header {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        #infoPanel {
+            padding: 10px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #compass {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            border: 2px solid #3498db;
+            position: relative;
+            margin: 10px auto;
+        }
+        .city-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            white-space: nowrap;
+        }
+        #north-indicator {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #3498db;
+        }
+        #score, #round {
+            margin-top: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            background-color: #2ecc71;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        #next-round {
+            margin-top: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            background-color: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+        }
+        #cesiumContainer {
+          flex-grow : 1 ;
+          width : 100% ;
+          height : 50vh ;
+      }
+      footer {
+          background-color : #34495e ;
+          color : white ;
+          text-align : center ;
+          padding : 5px 0 ;
+          font-size : 0.8em ;
+      }
+
+      @media (min-width : 768 px) {
+          #container {
+              flex-direction : row ;
+          }
+          #infoPanel {
+              width : 30% ;
+              height : calc(100vh -60 px );
+              overflow-y : auto ;
+          }
+          #cesiumContainer {
+              width : 70% ;
+              height : calc(100vh -60 px );
+          }
+          #compass {
+              width : 300 px ;
+              height : 300 px ;
+          }
+          .city-marker {
+              font-size : 12 px ;
+          }
+          h1 {
+              font-size : 2 em ;
+          }
+          #score ,#round ,#next-round {
+              font-size : 1.2 em ;
+              padding : 10 px 20 px ;
+          }
+      }
     </style>
 </head>
 <body>
-    <!-- ... (structure HTML inchangée) ... -->
+    <header>
+        <h1>GeoGuess France</h1>
+    </header>
+    <div id="container">
+        <div id="infoPanel">
+           <div id="compass">
+               <div id="north-indicator">N</div>
+           </div>
+           <div id="round">Round : 1</div>
+           <div id="score">Score : 0</div>
+           <div id="next-round" style ="display:none;">Prochain Round</div>
+       </div>
+       <div id="cesiumContainer"></div>
+   </div>
+   <footer>&copy;2023 GeoGuess France. Tous droits réservés.</footer>
 
-    <script>
-        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZWM3NmE3NC01MGVkLTRhMWMtOWU0My02OTJlYTNjY2RjY2MiLCJpZCI6MjQyOTUzLCJpYXQiOjE3MjY4Mzk3ODR9.lfT5koGpWQ2X_--BkP0fmqhKF21MM0capewARRO7i9o';
+   <script >
+       Cesium.Ion.defaultAccessToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZWM3NmE3NC01MGVkLTRhMWMtOWU0My02OTJlYTNjY2RjY2MiLCJpZCI6MjQyOTUzLCJpYXQiOjE3MjY4Mzk3ODR9.lfT5koGpWQ2X_--BkP0fmqhKF21MM0capewARRO7i9o';
 
-        const viewer = new Cesium.Viewer('cesiumContainer', {
-            terrainProvider: Cesium.createWorldTerrain(),
-            animation: false,
-            timeline: false,
-            sceneModePicker: false,
-            fullscreenButton: false,
-            navigationHelpButton: false,
-            homeButton: false,
-            geocoder: false,
-            baseLayerPicker: false
-        });
+       const viewer = new Cesium.Viewer('cesiumContainer',{
+           terrainProvider :
+               Cesium.createWorldTerrain(),
+           animation :
+               false ,
+           timeline :
+               false ,
+           sceneModePicker :
+               false ,
+           fullscreenButton :
+               false ,
+           navigationHelpButton :
+               false ,
+           homeButton :
+               false ,
+           geocoder :
+               false ,
+           baseLayerPicker :
+               false
+       });
 
-        // Limiter la vue à la France
-        viewer.camera.setView({
-            destination: Cesium.Rectangle.fromDegrees(-5.0, 41.0, 10.0, 51.5)
-        });
+       // Limiter la vue à la France
+       viewer.camera.setView({
+           destination :
+               Cesium.Rectangle.fromDegrees(-5.0 ,41.0 ,10.0 ,51.5 )
+       });
 
-        viewer.scene.screenSpaceCameraController.enableRotate = false;
-        viewer.scene.screenSpaceCameraController.enableTranslate = true;
-        viewer.scene.screenSpaceCameraController.enableZoom = true;
-        viewer.scene.screenSpaceCameraController.enableTilt = false;
-        viewer.scene.screenSpaceCameraController.enableLook = false;
+       viewer.scene.screenSpaceCameraController.enableRotate =false ;
+       viewer.scene.screenSpaceCameraController.enableTranslate =true ;
+       viewer.scene.screenSpaceCameraController.enableZoom =true ;
+       viewer.scene.screenSpaceCameraController.enableTilt =false ;
+       viewer.scene.screenSpaceCameraController.enableLook =false ;
 
-        const frenchCities = [
-            { name: "Paris", coords: [48.8566, 2.3522], emoji: "🗼" },
-            { name: "Marseille", coords: [43.2965, 5.3698], emoji: "⚓" },
-            { name: "Lyon", coords: [45.7640, 4.8357], emoji: "🦁" },
-            { name: "Toulouse", coords: [43.6047, 1.4442], emoji: "✈️" },
-            { name: "Nice", coords: [43.7102, 7.2620], emoji: "🌴" },
-            { name: "Nantes", coords: [47.2184, -1.5536], emoji: "⚓" },
-            { name: "Montpellier", coords: [43.6108, 3.8767], emoji: "🌞" },
-            { name: "Strasbourg", coords: [48.5734, 7.7521], emoji: "🏛️" },
-            { name: "Bordeaux", coords: [44.8378, -0.5792], emoji: "🍷" },
-            { name: "Lille", coords: [50.6292, 3.0573], emoji: "🥐" },
-            { name: "Rennes", coords: [48.1173, -1.6778], emoji: "🐓" },
-            { name: "Reims", coords: [49.2583, 4.0317], emoji: "🍾" },
-            { name: "Le Havre", coords: [49.4944, 0.1079], emoji: "🚢" },
-            { name: "Saint-Étienne", coords: [45.4397, 4.3872], emoji: "⚒️" },
-            { name: "Toulon", coords: [43.1242, 5.9280], emoji: "⚓" },
-            { name: "Grenoble", coords: [45.1885, 5.7245], emoji: "🏔️" },
-            { name: "Dijon", coords: [47.3220, 5.0415], emoji: "🥒" },
-            { name: "Angers", coords: [47.4784, -0.5632], emoji: "🌹" },
-            { name: "Nîmes", coords: [43.8367, 4.3601], emoji: "🏺" },
-            { name: "Villeurbanne", coords: [45.7715, 4.8900], emoji: "🏢" }
-        ];
+       const frenchCities =[
+           {name :"Paris",coords:[48.8566 ,2.3522],emoji:"🗼"},
+           {name :"Marseille",coords:[43.2965 ,5.3698],emoji:"⚓"},
+           {name :"Lyon",coords:[45.7640 ,4.8357],emoji:"🦁"},
+           {name :"Toulouse",coords:[43.6047 ,1.4442],emoji:"✈️"},
+           {name :"Nice",coords:[43.7102 ,7.2620],emoji:"🌴"},
+           {name :"Nantes",coords:[47.2184 ,-1.5536],emoji:"⚓"},
+           {name :"Montpellier",coords:[43.6108 ,3.8767],emoji:"🌞"},
+           {name :"Strasbourg",coords:[48.5734 ,7.7521],emoji:"🏛️"},
+           {name :"Bordeaux",coords:[44.8378 ,-0.5792],emoji:"🍷"},
+           {name :"Lille",coords:[50.6292 ,3.0573],emoji:"🥐"},
+           {name :"Rennes",coords:[48.1173 ,-1.6778],emoji:"🐓"},
+           {name :"Reims",coords:[49.2583 ,4.0317],emoji:"🍾"},
+           {name :"Le Havre",coords:[49.4944 ,0.1079],emoji:"🚢"},
+           {name :"Saint-Étienne",coords:[45.4397 ,4.3872],emoji:"⚒️"},
+           {name :"Toulon",coords:[43.1242 ,5.9280],emoji:"⚓"},
+           {name :"Grenoble",coords:[45.1885 ,5.7245],emoji:"🏔️"},
+           {name :"Dijon",coords:[47.3220 ,5.0415],emoji:"🥒"},
+           {name :"Angers",coords:[47.4784 ,-0.5632],emoji:"🌹"},
+           {name :"Nîmes",coords:[43.8367 ,4.3601],emoji:"🏺"},
+          {name :"Villeurbanne",coords:[45.7715 ,4.8900],emoji:"🏢"}
+      ];
 
-        let centralCity;
-        let roundNumber = 1;
-        let totalScore = 0;
+      let centralCity ;
+      let roundNumber =1 ;
+      let totalScore =0 ;
 
-        function startNewRound() {
-            viewer.entities.removeAll();
-            centralCity = frenchCities[Math.floor(Math.random() * frenchCities.length)];
-            addCentralPoint(centralCity.coords);
-            updateCompass();
-            document.getElementById('round').innerText = `Round: ${roundNumber}`;
-            document.getElementById('score').innerText = `Score: ${totalScore}`;
-            document.getElementById('next-round').style.display = 'none';
-        }
+      function startNewRound() {
+          viewer.entities.removeAll();
+          centralCity = frenchCities[Math.floor(Math.random() * frenchCities.length)];
+          addCentralPoint(centralCity.coords);
+          updateCompass();
+          document.getElementById('round').innerText =`Round:${roundNumber}`;
+          document.getElementById('score').innerText =`Score:${totalScore}`;
+          document.getElementById('next-round').style.display ='none';
+      }
 
-        function addCentralPoint(position) {
-            viewer.entities.add({
-                position: Cesium.Cartesian3.fromDegrees(position[1], position[0]),
-                point: {
-                    pixelSize: 10,
-                    color: Cesium.Color.RED
-                }
-            });
-        }
+      function addCentralPoint(position) {
+          viewer.entities.add({
+              position :
+                  Cesium.Cartesian3.fromDegrees(position[1],position[0]),
+              point:{
+                  pixelSize:
+                      10,color:
+                      Cesium.Color.RED
+              }
+          });
+      }
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
+      function calculateDistance(lat1,lon1,lat2,lon2) {
+          const R =6371 ;
+          const dLat =(lat2-lat1) * Math.PI /180 ;
+          const dLon =(lon2-lon1) * Math.PI /180 ;
+          const a =
+              Math.sin(dLat /2) * Math.sin(dLat /2) +
+              Math.cos(lat1 * Math.PI /180) * Math.cos(lat2 * Math.PI /180) *
+              Math.sin(dLon /2) * Math.sin(dLon /2);
+          const c =2 * Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+          return R*c ;
+      }
 
-        function calculateBearing(lat1, lon1, lat2, lon2) {
-            const φ1 = lat1 * Math.PI / 180;
-            const φ2 = lat2 * Math.PI / 180;
-            const Δλ = (lon2 - lon1) * Math.PI / 180;
+      function calculateBearing(lat1 ,lon1 ,lat2 ,lon2 ) {
+          const φ1 =lat1 * Math.PI /180 ;
+          const φ2 =lat2 * Math.PI /180 ;
+          const Δλ =(lon2 -lon1 ) * Math.PI /180 ;
 
-            const y = Math.sin(Δλ) * Math.cos(φ2);
-            const x = Math.cos(φ1) * Math.sin(φ2) -
-                      Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-            const θ = Math.atan2(y, x);
-            const bearing = (θ * 180 / Math.PI + 360) % 360;
-            return bearing;
-        }
+         const y =Math.sin(Δλ ) * Math.cos(φ2 );
+         const x =Math.cos(φ1 ) * Math.sin(φ2 ) -
+                   Math.sin(φ1 ) * Math.cos(φ2 ) * Math.cos(Δλ );
+         const θ =Math.atan2(y ,x );
+         const bearing =(θ *180 /Math.PI +360 ) %360 ;
+         return bearing ;
+     }
 
-        function updateCompass() {
-            const compass = document.getElementById('compass');
-            compass.innerHTML = '<div id="north-indicator">N</div>';
-            
-            const displayedCities = frenchCities.filter(city => city !== centralCity)
-                .sort(() => 0.5 - Math.random())
-                .slice(0, 4);
+     function updateCompass() {
+         const compass =document.getElementById('compass');
+         compass.innerHTML ='<div id="north-indicator">N</div>';
+         
+         const displayedCities =
+             frenchCities.filter(city => city !== centralCity)
+                         .sort(() => 0 .5 -Math.random())
+                         .slice(0 ,4 );
 
-            displayedCities.forEach(city => {
-                const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
-                const bearing = calculateBearing(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
-                
-                const radius = 140;
-                const x = 150 + radius * Math.sin(bearing * Math.PI / 180);
-                const y = 150 - radius * Math.cos(bearing * Math.PI / 180);
+         displayedCities.forEach(city => {
+             const distance =
+                 calculateDistance(centralCity.coords[0],
+                                   centralCity.coords[1],
+                                   city.coords[0],
+                                   city.coords[1]);
+             const bearing =
+                 calculateBearing(centralCity.coords[0],
+                                  centralCity.coords[1],
+                                  city.coords[0],
+                                  city.coords[1]);
+             
+             const radius =140 ;
+             const x =150 +radius * Math.sin(bearing * Math.PI /180 );
+             const y =150 -radius * Math.cos(bearing * Math.PI /180 );
 
-                const cityMarker = document.createElement('div');
-                cityMarker.className = 'city-marker';
-                cityMarker.style.left = `${x}px`;
-                cityMarker.style.top = `${y}px`;
-                cityMarker.innerHTML = `${city.name} ${city.emoji}<br>${Math.round(distance)} km`;
-                compass.appendChild(cityMarker);
-            });
-        }
+             const cityMarker =
+                 document.createElement('div');
+             cityMarker.className ='city-marker';
+             cityMarker.style.left=`${x}px`;
+             cityMarker.style.top=`${y}px`;
+             cityMarker.innerHTML=`${city.name} ${city .emoji}<br>${Math.round(distance)} km`;
+             compass.appendChild(cityMarker);
+         });
+     }
 
-        const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-        handler.setInputAction(function(click) {
-            const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
-            if (cartesian) {
-                const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-                const longitude = Cesium.Math.toDegrees(cartographic.longitude);
-                const latitude = Cesium.Math.toDegrees(cartographic.latitude);
-                
-                const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], latitude, longitude);
-                const maxDistance = 1000; // Distance maximale en km pour obtenir des points
-                const roundScore = Math.max(0, Math.round(1000 * Math.exp(-distance / 100)));
-                totalScore += roundScore;
+     const handler =
+         new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+     handler.setInputAction(function(click){
+         const cartesian =
+             viewer.camera.pickEllipsoid(click.position,
+                                         viewer.scene.globe .ellipsoid);
+         if(cartesian ){
+             const cartographic =
+                 Cesium.Cartographic.fromCartesian(cartesian );
+             const longitude =
+                 Cesium.Math.toDegrees(cartographic.longitude );
+             const latitude =
+                 Cesium.Math.toDegrees(cartographic.latitude );
+             
+             const distance =
+                 calculateDistance(centralCity.coords[0],
+                                   centralCity.coords[1],
+                                   latitude ,
+                                   longitude );
+             const maxDistance =10000 ; // Distance maximale en km pour obtenir des points
+             const roundScore =
+                 Math.max(0 ,
+                          Math.round(10000 *
+                                     Math.exp(-distance /100)));
+             totalScore +=roundScore ;
 
-                viewer.entities.add({
-                    position: cartesian,
-                    point: {
-                        pixelSize: 10,
-                        color: Cesium.Color.GREEN
-                    }
-                });
+             viewer.entities.add({
+                 position :
+                     cartesian ,
+                 point:{
+                     pixelSize:
+                         10,color:
+                         Cesium.Color.GREEN
+                 }
+             });
 
-                document.getElementById('score').innerText = `Score: ${totalScore} (+${roundScore})`;
-                document.getElementById('next-round').style.display = 'block';
-            }
-        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+             document.getElementById('score').innerText=`Score:${totalScore} (+${roundScore})`;
+             document.getElementById('next-round').style.display='block';
+         }
+     },Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-        document.getElementById('next-round').addEventListener('click', function() {
-            roundNumber++;
-            startNewRound();
-        });
+     document.getElementById('next-round').addEventListener('click',function(){
+         roundNumber ++;
+         startNewRound();
+     });
 
-        startNewRound();
-    </script>
-</body>
-</html>
+     startNewRound();
+ </script >
+</body >
+</html >

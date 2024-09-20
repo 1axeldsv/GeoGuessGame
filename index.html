@@ -198,13 +198,6 @@
                     point: {
                         pixelSize: 5,
                         color: Cesium.Color.BLUE
-                    },
-                    label: {
-                        text: city.name,
-                        font: '14pt sans-serif',
-                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                        pixelOffset: new Cesium.Cartesian2(0, -10)
                     }
                 });
             });
@@ -236,36 +229,26 @@
         }
 
         function updateCompass() {
-            console.log("Updating compass");
-            console.log("Central city:", centralCity);
-            
             const compass = document.getElementById('compass');
             compass.innerHTML = '<div id="north-indicator">N</div>';
             
-            const sortedCities = frenchCities.filter(city => city !== centralCity)
-                .map(city => {
-                    const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
-                    const bearing = calculateBearing(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
-                    console.log(`${city.name}: distance = ${distance}, bearing = ${bearing}`);
-                    return { ...city, distance, bearing };
-                })
-                .sort((a, b) => a.distance - b.distance)
+            const displayedCities = frenchCities.filter(city => city !== centralCity)
+                .sort(() => 0.5 - Math.random())
                 .slice(0, 8);
 
-            console.log("Sorted cities:", sortedCities);
-
-            sortedCities.forEach(city => {
-                const radius = 140;
-                const x = 150 + radius * Math.sin(city.bearing * Math.PI / 180);
-                const y = 150 - radius * Math.cos(city.bearing * Math.PI / 180);
+            displayedCities.forEach(city => {
+                const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
+                const bearing = calculateBearing(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
                 
-                console.log(`Placing ${city.name} at (${x}, ${y})`);
+                const radius = 140;
+                const x = 150 + radius * Math.sin(bearing * Math.PI / 180);
+                const y = 150 - radius * Math.cos(bearing * Math.PI / 180);
 
                 const cityMarker = document.createElement('div');
                 cityMarker.className = 'city-marker';
                 cityMarker.style.left = `${x}px`;
                 cityMarker.style.top = `${y}px`;
-                cityMarker.innerHTML = `${city.name} ${city.emoji}<br>${Math.round(city.distance)} km`;
+                cityMarker.innerHTML = `${city.name} ${city.emoji}<br>${Math.round(distance)} km`;
                 compass.appendChild(cityMarker);
             });
         }

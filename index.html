@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoGuess Challenge</title>
+    <title>GeoGuess Challenge 3D</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -14,7 +16,7 @@
             color: #333;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            height: 100vh;
         }
         header {
             background-color: #3498db;
@@ -30,43 +32,28 @@
         }
         #container {
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 20px;
             flex-grow: 1;
         }
-        #map {
-            height: 500px;
-            width: 60%;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            overflow: hidden;
+        #cesiumContainer {
+            width: 70%;
+            height: 100%;
         }
-        #circle-container {
+        #infoPanel {
             width: 30%;
-            margin-left: 20px;
-        }
-        #circle {
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            border: 3px solid #3498db;
-            background: rgba(52, 152, 219, 0.1);
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .city {
-            position: absolute;
-            font-size: 12px;
-            transform: translate(-50%, -50%);
+            padding: 20px;
             background-color: white;
-            border-radius: 15px;
-            padding: 4px 8px;
-            border: 1px solid #3498db;
-            white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            color: #3498db;
-            font-weight: 600;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        #cityList {
+            list-style-type: none;
+            padding: 0;
+        }
+        #cityList li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f0f2f5;
+            border-radius: 5px;
         }
         #score {
             margin-top: 20px;
@@ -76,12 +63,7 @@
             color: white;
             padding: 10px 20px;
             border-radius: 25px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-        #score:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+            text-align: center;
         }
         footer {
             background-color: #34495e;
@@ -91,54 +73,30 @@
             font-size: 0.9em;
         }
     </style>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
     <header>
-        <h1>GeoGuess Challenge</h1>
+        <h1>GeoGuess Challenge 3D</h1>
     </header>
     <div id="container">
-        <div id="map"></div>
-        <div id="circle-container">
-            <div id="circle"></div>
-            <div id="score">Cliquez sur la carte pour jouer !</div>
+        <div id="cesiumContainer"></div>
+        <div id="infoPanel">
+            <ul id="cityList"></ul>
+            <div id="score">Cliquez sur le globe pour jouer !</div>
         </div>
     </div>
     <footer>
-        &copy; 2023 GeoGuess Challenge. Tous droits réservés.
+        &copy; 2023 GeoGuess Challenge 3D. Tous droits réservés.
     </footer>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        // Le code JavaScript reste le même que dans la version précédente
-        var map = L.map('map', {
-            center: [0, 0],
-            zoom: 2,
-            minZoom: 2,
-            maxZoom: 6,
-            zoomControl: true,
-            scrollWheelZoom: true,
-            dragging: true,
-            attributionControl: false,
-            worldCopyJump: false
+        Cesium.Ion.defaultAccessToken = 'votre_token_cesium_ici';
+
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            terrainProvider: Cesium.createWorldTerrain()
         });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 6,
-            minZoom: 2,
-            noWrap: true,
-            bounds: [[-90, -180], [90, 180]]
-        }).addTo(map);
-
-        function getRandomLatLng() {
-            var lat = (Math.random() * 140) - 70;
-            var lng = (Math.random() * 360) - 180;
-            return [lat, lng];
-        }
-
-        var centralPoint = getRandomLatLng();
-
-        var cities = [
+        const cities = [
             { name: "New York", coords: [40.7128, -74.0060] },
             { name: "Tokyo", coords: [35.6762, 139.6503] },
             { name: "Paris", coords: [48.8566, 2.3522] },
@@ -149,81 +107,92 @@
             { name: "Cairo", coords: [30.0444, 31.2357] }
         ];
 
-        function calculateDistanceAndAngle(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            let dLon = (lon2 - lon1);
-
-            if (dLon > 180) dLon -= 360;
-            if (dLon < -180) dLon += 360;
-            dLon = dLon * Math.PI / 180;
-
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const distance = R * c;
-
-            let angle = Math.atan2(
-                Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180),
-                Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
-                Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon)
-            ) * 180 / Math.PI;
-            angle = (angle + 360) % 360;
-
-            return {distance, angle};
+        function getRandomLatLng() {
+            const lat = (Math.random() * 140) - 70;
+            const lng = (Math.random() * 360) - 180;
+            return [lat, lng];
         }
 
-        function createCircle(cities, centralPoint) {
-            var circle = document.getElementById('circle');
-            var radius = 140;
+        const centralPoint = getRandomLatLng();
 
-            circle.innerHTML = '';
-
-            cities.forEach(function(city) {
-                var result = calculateDistanceAndAngle(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
-                var angle = result.angle;
-                var distance = result.distance;
-
-                var x = radius * Math.sin(angle * Math.PI / 180) + 150;
-                var y = -radius * Math.cos(angle * Math.PI / 180) + 150;
-
-                var cityDiv = document.createElement('div');
-                cityDiv.className = 'city';
-                cityDiv.style.left = x + 'px';
-                cityDiv.style.top = y + 'px';
-                cityDiv.innerText = city.name + " (" + Math.round(distance) + " km)";
-
-                circle.appendChild(cityDiv);
-
-                L.marker(city.coords).addTo(map)
-                    .bindPopup(city.name);
+        function addCentralPoint(position) {
+            viewer.entities.add({
+                position: Cesium.Cartesian3.fromDegrees(position[1], position[0]),
+                point: {
+                    pixelSize: 10,
+                    color: Cesium.Color.RED
+                }
             });
         }
 
-        L.circle(centralPoint, {
-            color: '#e74c3c',
-            fillColor: '#e74c3c',
-            fillOpacity: 0.5,
-            radius: 200000
-        }).addTo(map);
+        function addCityMarkers() {
+            cities.forEach(city => {
+                viewer.entities.add({
+                    position: Cesium.Cartesian3.fromDegrees(city.coords[1], city.coords[0]),
+                    point: {
+                        pixelSize: 5,
+                        color: Cesium.Color.BLUE
+                    },
+                    label: {
+                        text: city.name,
+                        font: '14pt sans-serif',
+                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        pixelOffset: new Cesium.Cartesian2(0, -10)
+                    }
+                });
+            });
+        }
 
-        createCircle(cities, centralPoint);
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Rayon de la Terre en km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
 
-        map.on('click', function(e) {
-            var userLatLng = [e.latlng.lat, e.latlng.lng];
-            var result = calculateDistanceAndAngle(userLatLng[0], userLatLng[1], centralPoint[0], centralPoint[1]);
-            var distance = result.distance;
-            var score = Math.max(0, 1000 - Math.round(distance / 10));
+        function updateCityList() {
+            const cityList = document.getElementById('cityList');
+            cityList.innerHTML = '';
+            cities.forEach(city => {
+                const distance = calculateDistance(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
+                const li = document.createElement('li');
+                li.textContent = `${city.name}: ${Math.round(distance)} km`;
+                cityList.appendChild(li);
+            });
+        }
 
-            L.marker(userLatLng).addTo(map)
-                .bindPopup('Votre réponse')
-                .openPopup();
+        addCentralPoint(centralPoint);
+        addCityMarkers();
+        updateCityList();
 
-            document.getElementById('score').innerText = "Distance: " + Math.round(distance) + " km | Score: " + score;
-        });
+        const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+        handler.setInputAction(function(click) {
+            const pickedLocation = viewer.scene.pickPosition(click.position);
+            if (Cesium.defined(pickedLocation)) {
+                const cartographic = Cesium.Cartographic.fromCartesian(pickedLocation);
+                const longitude = Cesium.Math.toDegrees(cartographic.longitude);
+                const latitude = Cesium.Math.toDegrees(cartographic.latitude);
+                
+                const distance = calculateDistance(centralPoint[0], centralPoint[1], latitude, longitude);
+                const score = Math.max(0, 1000 - Math.round(distance / 10));
 
-        map.setMaxBounds([[-90, -180], [90, 180]]);
+                viewer.entities.add({
+                    position: pickedLocation,
+                    point: {
+                        pixelSize: 5,
+                        color: Cesium.Color.GREEN
+                    }
+                });
+
+                document.getElementById('score').innerText = `Distance: ${Math.round(distance)} km | Score: ${score}`;
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
     </script>
 </body>
 </html>

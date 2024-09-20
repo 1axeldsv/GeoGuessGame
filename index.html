@@ -33,10 +33,11 @@
         #container {
             display: flex;
             flex-grow: 1;
+            overflow: hidden;
         }
         #cesiumContainer {
             width: 70%;
-            height: 100%;
+            height: calc(100vh - 100px); /* Ajusté pour s'adapter à l'écran sans défilement */
         }
         #infoPanel {
             width: 30%;
@@ -93,8 +94,23 @@
         Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZWM3NmE3NC01MGVkLTRhMWMtOWU0My02OTJlYTNjY2RjY2MiLCJpZCI6MjQyOTUzLCJpYXQiOjE3MjY4Mzk3ODR9.lfT5koGpWQ2X_--BkP0fmqhKF21MM0capewARRO7i9o';
 
         const viewer = new Cesium.Viewer('cesiumContainer', {
-            terrainProvider: Cesium.createWorldTerrain()
+            terrainProvider: Cesium.createWorldTerrain(),
+            animation: false,
+            timeline: false,
+            sceneModePicker: false,
+            fullscreenButton: false,
+            navigationHelpButton: false,
+            homeButton: false,
+            geocoder: false,
+            baseLayerPicker: false
         });
+
+        // Désactive la rotation automatique et autres contrôles non désirés
+        viewer.scene.screenSpaceCameraController.enableRotate = false;
+        viewer.scene.screenSpaceCameraController.enableTranslate = false;
+        viewer.scene.screenSpaceCameraController.enableZoom = true;
+        viewer.scene.screenSpaceCameraController.enableTilt = false;
+        viewer.scene.screenSpaceCameraController.enableLook = false;
 
         const cities = [
             { name: "New York", coords: [40.7128, -74.0060] },
@@ -145,7 +161,7 @@
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Rayon de la Terre en km
+            const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = 

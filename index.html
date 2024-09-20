@@ -107,190 +107,201 @@
     <div id="container">
         <div id="cesiumContainer"></div>
         <div id="infoPanel">
-           <div id="compass">
+            <div id="compass">
                 <div id="north-indicator">N</div>
-           </div>
-           <div id="round">Round : 1</div>
-           <div id="score">Score : 0</div>
-           <div id="next-round" style="display : none;">Prochain Round</div>
-       </div>
-   </div>
-   <footer>&copy; 2023 GeoGuess France. Tous droits réservés.</footer>
+            </div>
+            <div id="round">Round: 1</div>
+            <div id="score">Score: 0</div>
+            <div id="next-round" style="display: none;">Prochain Round</div>
+        </div>
+    </div>
+    <footer>&copy; 2023 GeoGuess France. Tous droits réservés.</footer>
 
-   <script>
-       Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZWM3NmE3NC01MGVkLTRhMWMtOWU0My02OTJlYTNjY2RjY2MiLCJpZCI6MjQyOTUzLCJpYXQiOjE3MjY4Mzk3ODR9.lfT5koGpWQ2X_--BkP0fmqhKF21MM0capewARRO7i9o';
+    <script>
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZWM3NmE3NC01MGVkLTRhMWMtOWU0My02OTJlYTNjY2RjY2MiLCJpZCI6MjQyOTUzLCJpYXQiOjE3MjY4Mzk3ODR9.lfT5koGpWQ2X_--BkP0fmqhKF21MM0capewARRO7i9o';
 
-       const viewer = new Cesium.Viewer('cesiumContainer', {
-           terrainProvider : Cesium.createWorldTerrain(),
-           animation : false,
-           timeline : false,
-           sceneModePicker : false,
-           fullscreenButton : false,
-           navigationHelpButton : false,
-           homeButton : false,
-           geocoder : false,
-           baseLayerPicker : false
-       });
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            terrainProvider: Cesium.createWorldTerrain(),
+            animation: false,
+            timeline: false,
+            sceneModePicker: false,
+            fullscreenButton: false,
+            navigationHelpButton: false,
+            homeButton: false,
+            geocoder: false,
+            baseLayerPicker: false
+        });
 
-       // Limiter la vue à la France
-       viewer.camera.setView({
-           destination : Cesium.Rectangle.fromDegrees(-5.0,41.0,10.0,51.5)
-       });
+        // Limiter la vue à la France
+        viewer.camera.setView({
+            destination: Cesium.Rectangle.fromDegrees(-5.0, 41.0, 10.0, 51.5)
+        });
 
-       viewer.scene.screenSpaceCameraController.enableRotate = false ;
-       viewer.scene.screenSpaceCameraController.enableTranslate = true ;
-       viewer.scene.screenSpaceCameraController.enableZoom = true ;
-       viewer.scene.screenSpaceCameraController.enableTilt = false ;
-       viewer.scene.screenSpaceCameraController.enableLook = false ;
+        viewer.scene.screenSpaceCameraController.enableRotate = false;
+        viewer.scene.screenSpaceCameraController.enableTranslate = true;
+        viewer.scene.screenSpaceCameraController.enableZoom = true;
+        viewer.scene.screenSpaceCameraController.enableTilt = false;
+        viewer.scene.screenSpaceCameraController.enableLook = false;
 
-       const frenchCities = [
-           { name : "Paris", coords : [48.8566,2.3522], emoji : "🗼" },
-           { name : "Marseille", coords : [43.2965,5.3698], emoji : "⚓" },
-           { name : "Lyon", coords : [45.7640,4.8357], emoji : "🦁" },
-           { name : "Toulouse", coords : [43.6047,1.4442], emoji : "✈️" },
-           { name : "Nice", coords : [43.7102,7.2620], emoji : "🌴" },
-           { name : "Nantes", coords : [47.2184,-1.5536], emoji : "⚓" },
-           { name : "Montpellier", coords : [43.6108,3.8767], emoji : "🌞" },
-           { name : "Strasbourg", coords : [48.5734,7.7521], emoji : "🏛️" },
-           { name : "Bordeaux", coords : [44.8378,-0.5792], emoji:"🍷"},
-           {name:"Lille",coords:[50.6292,3.0573],emoji:"🥐"},
-           {name:"Rennes",coords:[48.1173,-1.6778],emoji:"🐓"},
-           {name:"Reims",coords:[49.2583,4.0317],emoji:"🍾"},
-           {name:"Le Havre",coords:[49.4944,0.1079],emoji:"🚢"},
-           {name:"Saint-Étienne",coords:[45.4397,4.3872],emoji:"⚒️"},
-           {name:"Toulon",coords:[43.1242,5.9280],emoji:"⚓"},
-           {name:"Grenoble",coords:[45.1885,5.7245],emoji:"🏔️"},
-           {name:"Dijon",coords:[47.3220,5.0415],emoji:"🥒"},
-           {name:"Angers",coords:[47.4784,-0.5632],emoji:"🌹"},
-           {name:"Nîmes",coords:[43.8367,4.3601],emoji:"🏺"},
-          {name:"Villeurbanne",coords:[45.7715,4.8900],emoji:"🏢"}
-      ];
+        const frenchCities = [
+            { name: "Paris", coords: [48.8566, 2.3522], emoji: "🗼" },
+            { name: "Marseille", coords: [43.2965, 5.3698], emoji: "⚓" },
+            { name: "Lyon", coords: [45.7640, 4.8357], emoji: "🦁" },
+            { name: "Toulouse", coords: [43.6047, 1.4442], emoji: "✈️" },
+            { name: "Nice", coords: [43.7102, 7.2620], emoji: "🌴" },
+            { name: "Nantes", coords: [47.2184, -1.5536], emoji: "⚓" },
+            { name: "Montpellier", coords: [43.6108, 3.8767], emoji: "🌞" },
+            { name: "Strasbourg", coords: [48.5734, 7.7521], emoji: "🏛️" },
+            { name: "Bordeaux", coords: [44.8378, -0.5792], emoji: "🍷" },
+            { name: "Lille", coords: [50.6292, 3.0573], emoji: "🥐" },
+            { name: "Rennes", coords: [48.1173, -1.6778], emoji: "🐓" },
+            { name: "Reims", coords: [49.2583, 4.0317], emoji: "🍾" },
+            { name: "Le Havre", coords: [49.4944, 0.1079], emoji: "🚢" },
+            { name: "Saint-Étienne", coords: [45.4397, 4.3872], emoji: "⚒️" },
+            { name: "Toulon", coords: [43.1242, 5.9280], emoji: "⚓" },
+            { name: "Grenoble", coords: [45.1885, 5.7245], emoji: "🏔️" },
+            { name: "Dijon", coords: [47.3220, 5.0415], emoji: "🥒" },
+            { name: "Angers", coords: [47.4784, -0.5632], emoji: "🌹" },
+            { name: "Nîmes", coords: [43.8367, 4.3601], emoji: "🏺" },
+            { name: "Villeurbanne", coords: [45.7715, 4.8900], emoji: "🏢" }
+        ];
 
-      let centralCity ;
-      let roundNumber =1 ;
-      let totalScore =0 ;
+        let centralCity;
+        let roundNumber = 1;
+        let totalScore = 0;
 
-      function startNewRound() {
-          viewer.entities.removeAll();
-          centralCity = frenchCities[Math.floor(Math.random() * frenchCities.length)];
-          addCentralPoint(centralCity.coords);
-          updateCompass();
-          document.getElementById('round').innerText = `Round:${roundNumber}`;
-          document.getElementById('score').innerText = `Score:${totalScore}`;
-          document.getElementById('next-round').style.display ='none';
-      }
+        function startNewRound() {
+            viewer.entities.removeAll();
+            centralCity = frenchCities[Math.floor(Math.random() * frenchCities.length)];
+            addCentralPoint(centralCity.coords);
+            addCityPins();
+            updateCompass();
+            document.getElementById('round').innerText = `Round: ${roundNumber}`;
+            document.getElementById('score').innerText = `Score: ${totalScore}`;
+            document.getElementById('next-round').style.display = 'none';
+        }
 
-      function addCentralPoint(position) {
-          viewer.entities.add({
-              position : Cesium.Cartesian3.fromDegrees(position[1],position[0]),
-              point:{pixelSize:
-                  10,color:
-                  Cesium.Color.RED
-              }
-          });
-      }
+        function addCentralPoint(position) {
+            viewer.entities.add({
+                position: Cesium.Cartesian3.fromDegrees(position[1], position[0]),
+                point: {
+                    pixelSize: 10,
+                    color: Cesium.Color.RED
+                }
+            });
+        }
 
-      function calculateDistance(lat1,lon1,lat2,lon2) {
-          const R =6371 ;
-          const dLat =(lat2-lat1) * Math.PI /180 ;
-          const dLon =(lon2-lon1) * Math.PI /180 ;
-          const a =
-              Math.sin(dLat /2) * Math.sin(dLat /2) +
-              Math.cos(lat1 * Math.PI /180) * Math.cos(lat2 * Math.PI /180) *
-              Math.sin(dLon /2) * Math.sin(dLon /2);
-          const c =2 * Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-          return R*c ;
-      }
+        function addCityPins() {
+            frenchCities.forEach(city => {
+                viewer.entities.add({
+                    position: Cesium.Cartesian3.fromDegrees(city.coords[1], city.coords[0]),
+                    point: {
+                        pixelSize: 5,
+                        color: Cesium.Color.BLUE
+                    },
+                    label: {
+                        text: city.name,
+                        font: '14pt sans-serif',
+                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        pixelOffset: new Cesium.Cartesian2(0, -10)
+                    }
+                });
+            });
+        }
 
-      function calculateBearing(lat1 ,lon1 ,lat2 ,lon2 ) {
-          const y =Math.sin(lon2 -lon1 ) * Math.cos(lat2 );
-          const x =Math.cos(lat1 ) * Math.sin(lat2 ) -
-                    Math.sin(lat1 ) * Math.cos(lat2 ) * Math.cos(lon2 -lon1 );
-          const θ =Math.atan2(y ,x );
-          const bearing =(θ *180 /Math.PI +360 ) %360 ;
-          return bearing ;
-      }
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
 
-      function updateCompass() {
-          const compass =document.getElementById('compass');
-          compass.innerHTML ='<div id="north-indicator">N</div>';
-          
-          // Trier les villes par distance et prendre les plus proches
-          const sortedCities = frenchCities.filter(city => city !== centralCity)
-                                           .map(city => ({
-                                               ...city,
-                                               distance:
-                                                   calculateDistance(centralCity.coords[0],
-                                                                     centralCity.coords[1],
-                                                                     city.coords[0],
-                                                                     city.coords[1])
-                                           }))
-                                           .sort((a,b)=>a.distance-b.distance)
-                                           .slice(0 ,8 );
+        function calculateBearing(lat1, lon1, lat2, lon2) {
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
 
-         sortedCities.forEach(city => {
-             const bearing =
-                 calculateBearing(centralCity.coords[0],
-                                  centralCity.coords[1],
-                                  city.coords[0],
-                                  city.coords[1]);
-             
-             const radius =140 ;
-             const x =150 +radius * Math.sin(bearing * Math.PI /180 );
-             const y =150 -radius * Math.cos(bearing * Math.PI /180 );
-             
-             const cityMarker =document.createElement('div');
-             cityMarker.className ='city-marker';
-             cityMarker.style.left=`${x}px`;
-             cityMarker.style.top=`${y}px`;
-             cityMarker.innerHTML=`${city.name} ${city .emoji}<br>${Math.round(city.distance)} km`;
-             compass.appendChild(cityMarker);
-         });
-     }
+            const y = Math.sin(Δλ) * Math.cos(φ2);
+            const x = Math.cos(φ1) * Math.sin(φ2) -
+                      Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+            const θ = Math.atan2(y, x);
+            const bearing = (θ * 180 / Math.PI + 360) % 360;
+            return bearing;
+        }
 
-     const handler =
-         new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-     handler.setInputAction(function(click){
-         const pickedLocation =
-             viewer.scene.pickPosition(click.position);
-         if(Cesium .defined(pickedLocation)){
-             const cartographic =
-                 Cesium.Cartographic.fromCartesian(pickedLocation);
-             const longitude =
-                 Cesium.Math.toDegrees(cartographic.longitude);
-             const latitude =
-                 Cesium.Math.toDegrees(cartographic.latitude);
-             
-             const distance =
-                 calculateDistance(centralCity.coords[0],
-                                   centralCity.coords[1],
-                                   latitude ,
-                                   longitude );
-             const roundScore =
-                 Math.max(0 ,10000 -Math.round(distance *10)); // Ajusté pour la France
-             totalScore +=roundScore ;
+        function updateCompass() {
+            console.log("Updating compass");
+            console.log("Central city:", centralCity);
+            
+            const compass = document.getElementById('compass');
+            compass.innerHTML = '<div id="north-indicator">N</div>';
+            
+            const sortedCities = frenchCities.filter(city => city !== centralCity)
+                .map(city => {
+                    const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
+                    const bearing = calculateBearing(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
+                    console.log(`${city.name}: distance = ${distance}, bearing = ${bearing}`);
+                    return { ...city, distance, bearing };
+                })
+                .sort((a, b) => a.distance - b.distance)
+                .slice(0, 8);
 
-             viewer.entities.add({
-                 position :
-                     pickedLocation ,
-                 point:{
-                     pixelSize:
-                         10,color:
-                         Cesium.Color.GREEN
-                 }
-             });
+            console.log("Sorted cities:", sortedCities);
 
-             document.getElementById('score').innerText=`Score:${totalScore} (+${roundScore})`;
-             document.getElementById('next-round').style.display='block';
-         }
-     },Cesium.ScreenSpaceEventType.LEFT_CLICK);
+            sortedCities.forEach(city => {
+                const radius = 140;
+                const x = 150 + radius * Math.sin(city.bearing * Math.PI / 180);
+                const y = 150 - radius * Math.cos(city.bearing * Math.PI / 180);
+                
+                console.log(`Placing ${city.name} at (${x}, ${y})`);
 
-     document.getElementById('next-round').addEventListener('click',function(){
-         roundNumber ++;
-         startNewRound();
-     });
+                const cityMarker = document.createElement('div');
+                cityMarker.className = 'city-marker';
+                cityMarker.style.left = `${x}px`;
+                cityMarker.style.top = `${y}px`;
+                cityMarker.innerHTML = `${city.name} ${city.emoji}<br>${Math.round(city.distance)} km`;
+                compass.appendChild(cityMarker);
+            });
+        }
 
-     startNewRound();
- </script>
+        const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+        handler.setInputAction(function(click) {
+            const pickedLocation = viewer.scene.pickPosition(click.position);
+            if (Cesium.defined(pickedLocation)) {
+                const cartographic = Cesium.Cartographic.fromCartesian(pickedLocation);
+                const longitude = Cesium.Math.toDegrees(cartographic.longitude);
+                const latitude = Cesium.Math.toDegrees(cartographic.latitude);
+                
+                const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], latitude, longitude);
+                const maxDistance = 1000; // Distance maximale en km pour obtenir des points
+                const roundScore = Math.max(0, Math.round((1 - distance / maxDistance) * 1000));
+                totalScore += roundScore;
+
+                viewer.entities.add({
+                    position: pickedLocation,
+                    point: {
+                        pixelSize: 10,
+                        color: Cesium.Color.GREEN
+                    }
+                });
+
+                document.getElementById('score').innerText = `Score: ${totalScore} (+${roundScore})`;
+                document.getElementById('next-round').style.display = 'block';
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+        document.getElementById('next-round').addEventListener('click', function() {
+            roundNumber++;
+            startNewRound();
+        });
+
+        startNewRound();
+    </script>
 </body>
 </html>

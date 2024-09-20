@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoGuess Challenge 3D</title>
+    <title>GeoGuess France</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
@@ -102,7 +102,7 @@
 </head>
 <body>
     <header>
-        <h1>GeoGuess Challenge 3D</h1>
+        <h1>GeoGuess France</h1>
     </header>
     <div id="container">
         <div id="cesiumContainer"></div>
@@ -116,7 +116,7 @@
         </div>
     </div>
     <footer>
-        &copy; 2023 GeoGuess Challenge 3D. Tous droits réservés.
+        &copy; 2023 GeoGuess France. Tous droits réservés.
     </footer>
 
     <script>
@@ -134,41 +134,48 @@
             baseLayerPicker: false
         });
 
-        viewer.scene.screenSpaceCameraController.enableRotate = true;
+        // Limiter la vue à la France
+        viewer.camera.setView({
+            destination: Cesium.Rectangle.fromDegrees(-5.0, 41.0, 10.0, 51.5)
+        });
+
+        viewer.scene.screenSpaceCameraController.enableRotate = false;
         viewer.scene.screenSpaceCameraController.enableTranslate = true;
         viewer.scene.screenSpaceCameraController.enableZoom = true;
         viewer.scene.screenSpaceCameraController.enableTilt = false;
         viewer.scene.screenSpaceCameraController.enableLook = false;
 
-        const cities = [
-            { name: "New York", coords: [40.7128, -74.0060] },
-            { name: "Rio de Janeiro", coords: [-22.9068, -43.1729] },
-            { name: "London", coords: [51.5074, -0.1278] },
-            { name: "Moscow", coords: [55.7558, 37.6173] },
-            { name: "Cairo", coords: [30.0444, 31.2357] },
-            { name: "Dubai", coords: [25.2048, 55.2708] },
-            { name: "Mumbai", coords: [19.0760, 72.8777] },
-            { name: "Singapore", coords: [1.3521, 103.8198] },
-            { name: "Tokyo", coords: [35.6762, 139.6503] },
-            { name: "Sydney", coords: [-33.8688, 151.2093] },
-            { name: "Los Angeles", coords: [34.0522, -118.2437] },
-            { name: "Cape Town", coords: [-33.9249, 18.4241] }
+        const frenchCities = [
+            { name: "Paris", coords: [48.8566, 2.3522] },
+            { name: "Marseille", coords: [43.2965, 5.3698] },
+            { name: "Lyon", coords: [45.7640, 4.8357] },
+            { name: "Toulouse", coords: [43.6047, 1.4442] },
+            { name: "Nice", coords: [43.7102, 7.2620] },
+            { name: "Nantes", coords: [47.2184, -1.5536] },
+            { name: "Montpellier", coords: [43.6108, 3.8767] },
+            { name: "Strasbourg", coords: [48.5734, 7.7521] },
+            { name: "Bordeaux", coords: [44.8378, -0.5792] },
+            { name: "Lille", coords: [50.6292, 3.0573] },
+            { name: "Rennes", coords: [48.1173, -1.6778] },
+            { name: "Reims", coords: [49.2583, 4.0317] },
+            { name: "Le Havre", coords: [49.4944, 0.1079] },
+            { name: "Saint-Étienne", coords: [45.4397, 4.3872] },
+            { name: "Toulon", coords: [43.1242, 5.9280] },
+            { name: "Grenoble", coords: [45.1885, 5.7245] },
+            { name: "Dijon", coords: [47.3220, 5.0415] },
+            { name: "Angers", coords: [47.4784, -0.5632] },
+            { name: "Nîmes", coords: [43.8367, 4.3601] },
+            { name: "Villeurbanne", coords: [45.7715, 4.8900] }
         ];
 
-        let centralPoint;
+        let centralCity;
         let roundNumber = 1;
         let totalScore = 0;
 
-        function getRandomLatLng() {
-            const lat = (Math.random() * 140) - 70;
-            const lng = (Math.random() * 360) - 180;
-            return [lat, lng];
-        }
-
         function startNewRound() {
             viewer.entities.removeAll();
-            centralPoint = getRandomLatLng();
-            addCentralPoint(centralPoint);
+            centralCity = frenchCities[Math.floor(Math.random() * frenchCities.length)];
+            addCentralPoint(centralCity.coords);
             updateCompass();
             document.getElementById('round').innerText = `Round: ${roundNumber}`;
             document.getElementById('score').innerText = `Score: ${totalScore}`;
@@ -210,11 +217,13 @@
             const compass = document.getElementById('compass');
             compass.innerHTML = '<div id="north-indicator">N</div>';
             
-            const displayedCities = cities.sort(() => 0.5 - Math.random()).slice(0, 6);
+            const displayedCities = frenchCities.filter(city => city !== centralCity)
+                                                .sort(() => 0.5 - Math.random())
+                                                .slice(0, 8);
             
             displayedCities.forEach(city => {
-                const distance = calculateDistance(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
-                const bearing = calculateBearing(centralPoint[0], centralPoint[1], city.coords[0], city.coords[1]);
+                const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
+                const bearing = calculateBearing(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
                 const x = 150 + 140 * Math.sin(bearing * Math.PI / 180);
                 const y = 150 - 140 * Math.cos(bearing * Math.PI / 180);
                 
@@ -235,8 +244,8 @@
                 const longitude = Cesium.Math.toDegrees(cartographic.longitude);
                 const latitude = Cesium.Math.toDegrees(cartographic.latitude);
                 
-                const distance = calculateDistance(centralPoint[0], centralPoint[1], latitude, longitude);
-                const roundScore = Math.max(0, 1000 - Math.round(distance / 10));
+                const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], latitude, longitude);
+                const roundScore = Math.max(0, 1000 - Math.round(distance * 10)); // Ajusté pour la France
                 totalScore += roundScore;
 
                 viewer.entities.add({

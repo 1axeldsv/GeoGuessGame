@@ -91,48 +91,61 @@
             text-align: center;
             cursor: pointer;
         }
-        #cesiumContainer {
-            flex-grow: 1;
-            width: 100%;
-            height: 60vh;
-        }
-        footer {
-            background-color: #34495e;
-            color: white;
-            text-align: center;
-            padding: 5px 0;
-            font-size: 0.8em;
-        }
+        #guess-input {
+          margin-top : 10 px ;
+          padding : 5 px ;
+          font-size : 1 em ;
+          width : 80% ;
+          border-radius : 5 px ;
+          border : 1 px solid #ccc ;
+      }
+      #submit-guess {
+          margin-top : 10 px ;
+          padding : 5 px 10 px ;
+          font-size : 1 em ;
+          background-color : #3498db ;
+          color : white ;
+          border : none ;
+          border-radius : 5 px ;
+          cursor : pointer ;
+      }
+      footer {
+          background-color : #34495e ;
+          color : white ;
+          text-align : center ;
+          padding : 5 px 0 ;
+          font-size : 0.8 em ;
+      }
 
-        @media (min-width: 768px) {
-            #container {
-                flex-direction: row;
-                max-height: none;
-            }
-            #infoPanel {
-                width: 30%;
-                height: calc(100vh - 60px);
-                max-height: none;
-            }
-            #cesiumContainer {
-                width: 70%;
-                height: calc(100vh - 60px);
-            }
-            #compass {
-                width: 300px;
-                height: 300px;
-            }
-            .city-marker {
-                font-size: 12px;
-            }
-            h1 {
-                font-size: 2em;
-            }
-            #score, #round, #clicks-left, #next-round {
-                font-size: 1.2em;
-                padding: 10px 20px;
-            }
-        }
+      @media (min-width : 768 px) {
+          #container {
+              flex-direction : row ;
+              max-height : none ;
+          }
+          #infoPanel {
+              width : 30% ;
+              height : calc(100vh -60 px );
+              max-height : none ;
+          }
+          #cesiumContainer {
+              width : 70% ;
+              height : calc(100vh -60 px );
+          }
+          #compass {
+              width : 300 px ;
+              height : 300 px ;
+          }
+          .city-marker {
+              font-size : 12 px ;
+          }
+          h1 {
+              font-size : 2 em ;
+          }
+          #score ,#round ,#clicks-left ,#next-round ,#submit-guess {
+              font-size : 1.2 em ;
+              padding : 10 px 20 px ;
+          }
+      }
     </style>
 </head>
 <body>
@@ -141,209 +154,433 @@
     </header>
     <div id="container">
         <div id="infoPanel">
-            <div id="compass">
-                <div id="north-indicator">N</div>
-            </div>
-            <div id="round">Round: 1/6</div>
-            <div id="score">Score: 0</div>
-            <div id="clicks-left">Clics restants: 1</div>
-            <div id="next-round" style="display: none;">Prochain Round</div>
-        </div>
-        <div id="cesiumContainer"></div>
-    </div>
-    <footer>&copy; 2023 GeoGuess France. Tous droits réservés.</footer>
-        <script>
-        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZWM3NmE3NC01MGVkLTRhMWMtOWU0My02OTJlYTNjY2RjY2MiLCJpZCI6MjQyOTUzLCJpYXQiOjE3MjY4Mzk3ODR9.lfT5koGpWQ2X_--BkP0fmqhKF21MM0capewARRO7i9o';
+           <div id="compass">
+               <div id="north-indicator">N</div>
+           </div>
+           <div id="round">Round : 1/6</div>
+           <div id="score">Score : 0</div>
+           <div id="clicks-left">Clics restants : 1</div>
+           <input type ="text" id ="guess-input" placeholder ="Entrez le nom de la ville"/>
+           <button id ="submit-guess" style ="display:none;">Valider la réponse</button>
+           <div id="next-round" style ="display:none;">Prochain Round</div>
+       </div>
+       <div id="cesiumContainer"></div>
+   </div>
+   <footer>&copy;2023 GeoGuess France. Tous droits réservés.</footer>
 
-        const viewer = new Cesium.Viewer('cesiumContainer', {
-            terrainProvider: Cesium.createWorldTerrain(),
-            animation: false,
-            timeline: false,
-            sceneModePicker: false,
-            fullscreenButton: false,
-            navigationHelpButton: false,
-            homeButton: false,
-            geocoder: false,
-            baseLayerPicker: false
-        });
+   <script >
+       Cesium.Ion.defaultAccessToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZWM3NmE3NC01MGVkLTRhMWMtOWU0My02OTJlYTNjY2RjY2MiLCJpZCI6MjQyOTUzLCJpYXQiOjE3MjY4Mzk3ODR9.lfT5koGpWQ2X_--BkP0fmqhKF21MM0capewARRO7i9o';
 
-        viewer.camera.setView({
-            destination: Cesium.Rectangle.fromDegrees(-5.0, 41.0, 10.0, 51.5)
-        });
+       const viewer = new Cesium.Viewer('cesiumContainer',{
+           terrainProvider :
+               Cesium.createWorldTerrain(),
+           animation :
+               false ,
+           timeline :
+               false ,
+           sceneModePicker :
+               false ,
+           fullscreenButton :
+               false ,
+           navigationHelpButton :
+               false ,
+           homeButton :
+               false ,
+           geocoder :
+               false ,
+           baseLayerPicker :
+               false
+       });
 
-        viewer.scene.screenSpaceCameraController.enableRotate = false;
-        viewer.scene.screenSpaceCameraController.enableTranslate = true;
-        viewer.scene.screenSpaceCameraController.enableZoom = true;
-        viewer.scene.screenSpaceCameraController.enableTilt = false;
-        viewer.scene.screenSpaceCameraController.enableLook = false;
+       viewer.camera.setView({
+           destination :
+               Cesium.Rectangle.fromDegrees(-5.0 ,41.0 ,10.0 ,51.5 )
+       });
 
-        const frenchCities = [
-    { name: "Paris", coords: [48.8566, 2.3522], emoji: "🗼" },
-    { name: "Marseille", coords: [43.2965, 5.3698], emoji: "⚓" },
-    { name: "Lyon", coords: [45.7640, 4.8357], emoji: "🦁" },
-    { name: "Toulouse", coords: [43.6047, 1.4442], emoji: "✈️" },
-    { name: "Nice", coords: [43.7102, 7.2620], emoji: "🌴" },
-    { name: "Nantes", coords: [47.2184, -1.5536], emoji: "⚓" },
-    { name: "Montpellier", coords: [43.6108, 3.8767], emoji: "🌞" },
-    { name: "Strasbourg", coords: [48.5734, 7.7521], emoji: "🏛️" },
-    { name: "Bordeaux", coords: [44.8378, -0.5792], emoji: "🍷" },
-    { name: "Lille", coords: [50.6292, 3.0573], emoji: "🥐" },
-    { name: "Rennes", coords: [48.1173, -1.6778], emoji: "🐓" },
-    { name: "Reims", coords: [49.2583, 4.0317], emoji: "🍾" },
-    { name: "Le Havre", coords: [49.4944, 0.1079], emoji: "🚢" },
-    { name: "Saint-Étienne", coords: [45.4397, 4.3872], emoji: "⚒️" },
-    { name: "Toulon", coords: [43.1242, 5.9280], emoji: "⚓" },
-    { name: "Grenoble", coords: [45.1885, 5.7245], emoji: "🏔️" },
-    { name: "Dijon", coords: [47.3220, 5.0415], emoji: "🥒" },
-    { name: "Angers", coords: [47.4784, -0.5632], emoji: "🌹" },
-    { name: "Nîmes", coords: [43.8367, 4.3601], emoji: "🏺" },
-    { name: "Villeurbanne", coords: [45.7715, 4.8900], emoji: "🏢" },
-    // Nouvelles villes ajoutées
-    { name: "Aix-en-Provence", coords: [43.5297, 5.4474], emoji: "🎨" },
-    { name: "Brest", coords: [48.3904, -4.4861], emoji: "⚓" },
-    { name: "Limoges", coords: [45.8315, 1.2578], emoji: "🏺" },
-    { name: "Tours", coords: [47.3941, 0.6848], emoji: "🏰" },
-    { name: "Amiens", coords: [49.8942, 2.2957], emoji: "⛪" },
-    { name: "Metz", coords: [49.1193, 6.1757], emoji: "🏛️" },
-    { name: "Besançon", coords: [47.2378, 6.0241], emoji: "⏱️" },
-    { name: "Perpignan", coords: [42.6986, 2.8956], emoji: "🏖️" },
-    { name: "Orléans", coords: [47.9029, 1.9039], emoji: "👸" },
-    { name: "Rouen", coords: [49.4431, 1.0993], emoji: "🕰️" },
-    { name: "Mulhouse", coords: [47.7508, 7.3359], emoji: "🏭" },
-    { name: "Caen", coords: [49.1829, -0.3707], emoji: "🏰" },
-    { name: "Nancy", coords: [48.6921, 6.1844], emoji: "🎭" },
-    { name: "Saint-Denis", coords: [48.9358, 2.3596], emoji: "👑" },
-    { name: "Argenteuil", coords: [48.9479, 2.2481], emoji: "🎨" },
-    { name: "Roubaix", coords: [50.6942, 3.1746], emoji: "🏭" },
-    { name: "Tourcoing", coords: [50.7249, 3.1613], emoji: "🧵" },
-    { name: "Montreuil", coords: [48.8640, 2.4484], emoji: "🍑" },
-    { name: "Avignon", coords: [43.9493, 4.8055], emoji: "🎭" },
-    { name: "Dunkerque", coords: [51.0343, 2.3767], emoji: "⚓" }
-];
+       viewer.scene.screenSpaceCameraController.enableRotate =false ;
+       viewer.scene.screenSpaceCameraController.enableTranslate =true ;
+       viewer.scene.screenSpaceCameraController.enableZoom =true ;
+       viewer.scene.screenSpaceCameraController.enableTilt =false ;
+       viewer.scene.screenSpaceCameraController.enableLook =false ;
 
-        let centralCity;
-        let roundNumber = 1;
-        let totalScore = 0;
-        let clicksLeft = 1;
-        const TOTAL_ROUNDS = 6;
+       const frenchCities =[
+           {name :"Paris",coords:[48.8566 ,2.3522],emoji:"🗼"},
+           {name :"Marseille",coords:[43.2965 ,5.3698],emoji:"⚓"},
+           {name :"Lyon",coords:[45.7640 ,4.8357],emoji:"🦁"},
+           {name :"Toulouse",coords:[43.6047 ,1.4442],emoji:"✈️"},
+           {name :"Nice",coords:[43.7102 ,7.2620],emoji:"🌴"},
+           {name :"Nantes",coords:[47.2184 ,-1.5536],emoji:"⚓"},
+           {name :"Montpellier",coords:[43.6108 ,3.8767],emoji:"🌞"},
+           {name :"Strasbourg",coords:[48.5734 ,7.7521],emoji:"🏛️"},
+           {name :"Bordeaux",coords:[44.8378 ,-0.5792],emoji:"🍷"},
+           {name :"Lille",coords:[50.6292 ,3.0573],emoji:"🥐"},
+           {name :"Rennes",coords:[48.1173 ,-1.6778],emoji:"🐓"},
+           {name :"Reims",coords:[49.2583 ,4.0317],emoji:"🍾"},
+           {name :"Le Havre",coords:[49.4944 ,0.1079],emoji:"🚢"},
+           {name :"Saint-Étienne",coords:[45.4397 ,4.3872],emoji:"⚒️"},
+           {name :"Toulon",coords:[43.1242 ,5.9280],emoji:"⚓"},
+           {name :"Grenoble",coords:[45.1885 ,5.7245],emoji:"🏔️"},
+           {name :"Dijon",coords:[47.3220 ,5.0415],emoji:"🥒"},
+           {name :"Angers",coords:[47.4784 ,-0.5632],emoji:"🌹"},
+           {name :"Nîmes",coords:[43.8367 ,4.3601],emoji:"🏺"},
+          {name :"Villeurbanne",coords:[45.7715 ,4.8900],emoji:"🏢"},
+         // Nouvelles villes ajoutées
+         {name :"Aix-en-Provence",coords:[43 .5297 ,5 .4474 ],emoji:"🎨"},
+         {name :"Brest",coords:[48 .3904 ,-4 .4861 ],emoji:"⚓"},
+         {name :"Limoges",coords:[45 .8315 ,1 .2578 ],emoji:"🏺"},
+         {name :"Tours",coords:[47 .3941 ,0 .6848 ],emoji:"🏰"},
+         {name :"Amiens",coords:[49 .8942 ,2 .2957 ],emoji:"⛪"},
+         {name :"Metz",coords:[49 .1193 ,6 .1757 ],emoji:"🏛️"},
+         {name :"Besançon",coords:[47 .2378 ,6 .0241 ],emoji:"⏱️"},
+         {name :"Perpignan",coords:[42 .6986 ,2 .8956 ],emoji:"🏖️"},
+         {name :"Orléans",coords:[47 .9029 ,1 .9039 ],emoji:"👸"},
+         {name :"Rouen",coords:[49 .4431 ,1 .0993 ],emoji:"🕰️"},
+         {name :"Mulhouse",coords:[47 .7508 ,7 .3359 ],emoji:"🏭"},
+         {name :"Caen",coords:[49 .1829 ,-0 .3707 ],emoji:"🏰"},
+         {name :"Nancy",coords:[48 .6921 ,6 .1844 ],emoji:"🎭"},
+         {name :"Saint-Denis",coords:[48 .9358 ,2 .3596 ],emoji:"👑"},
+         {name :"Argenteuil",coords:[48 .9479 ,2 .2481 ],emoji:"🎨"},
+         {name :"Roubaix",coords:[50 .6942 ,3 .1746 ],emoji:"🏭"},
+         {name :"Tourcoing",coords:[50 .7249 ,3 .1613 ],emoji:"🧵"},
+         {name :"Montreuil",coords:[48 .864 ,-2 .4484 ],emoji:"🍑"},
+         {name :"Avignon",coords:[43 .9493 ,-4 .8055 ],emoji:"🎭"},
+         {name :"Dunkerque", coords:
+             [51
+                 .
+                 0343
+                 ,
+                 -
+                 .
+                 ]
+             emoji
+             :
+             "⚓"
+     }
+ ];
 
-        function startNewRound() {
-            viewer.entities.removeAll();
-            centralCity = frenchCities[Math.floor(Math.random() * frenchCities.length)];
-            updateCompass();
-            document.getElementById('round').innerText = `Round: ${roundNumber}/${TOTAL_ROUNDS}`;
-            document.getElementById('score').innerText = `Score: ${totalScore}`;
-            document.getElementById('clicks-left').innerText = `Clics restants: ${clicksLeft}`;
-            document.getElementById('next-round').style.display = 'none';
-            clicksLeft = 1;
-        }
+ let centralCity ;let roundNumber =1 ;let totalScore =0 ;let clicksLeft =1 ;const TOTAL_ROUNDS =6 ;
 
-        function addCentralPoint(position) {
-            viewer.entities.add({
-                position: Cesium.Cartesian3.fromDegrees(position[1], position[0]),
-                point: {
-                    pixelSize: 10,
-                    color: Cesium.Color.RED,
-                    scaleByDistance: new Cesium.NearFarScalar(1.5e2, 2.0, 1.5e7, 0.5)
-                }
-            });
-        }
+ function startNewRound() {
+     viewer.entities.removeAll();
+     centralCity = frenchCities[Math.floor(Math.random() * frenchCities.length)];
+     updateCompass();
+     document.getElementById('round').innerText =`Round:${roundNumber}/${TOTAL_ROUNDS}`;
+     document.getElementById('score').innerText =`Score:${totalScore}`;
+     document.getElementById('clicks-left').innerText =`Clics restants:${clicksLeft}`;
+     document.getElementById('next-round').style.display ='none';
+     document.getElementById('guess-input').style.display ='none';
+     document.getElementById('submit-guess').style.display ='none';
+     clicksLeft =1 ;
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
+ }
 
-        function calculateBearing(lat1, lon1, lat2, lon2) {
-            const φ1 = lat1 * Math.PI / 180;
-            const φ2 = lat2 * Math.PI / 180;
-            const Δλ = (lon2 - lon1) * Math.PI / 180;
+ function addCentralPoint(position) {
+     viewer.entities.add({
+         position :
+             Cesium.Cartesian3.fromDegrees(position[1],position[0]),
+         point:{
+             pixelSize:
+                 10,color:
+                 Cesium.Color.RED,
+             scaleByDistance:
+                 new Cesium.NearFarScalar(150,200,15000000,.05)
+         }
+     });
+ }
 
-            const y = Math.sin(Δλ) * Math.cos(φ2);
-            const x = Math.cos(φ1) * Math.sin(φ2) -
-                      Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-            const θ = Math.atan2(y, x);
-            const bearing = (θ * 180 / Math.PI + 360) % 360;
-            return bearing;
-        }
+ function calculateDistance(lat1,lon1,lat2,lon2) {
+     const R =6371 ;const dLat =(lat2-lat1) * Math.PI /180 ;const dLon =(lon2-lon1) * Math.PI /180 ;const a =
+         Math.sin(dLat /2) * Math.sin(dLat /2) +
+         Math.cos(lat1 * Math.PI /180) * Math.cos(lat2 * Math.PI /180) *
+         Math.sin(dLon /2) * Math.sin(dLon /2);
+     const c =2 * Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+     return R*c ;
 
-        function updateCompass() {
-            const compass = document.getElementById('compass');
-            compass.innerHTML = '<div id="north-indicator">N</div>';
-            
-            const displayedCities = frenchCities.filter(city => city !== centralCity)
-                .sort(() => 0.5 - Math.random())
-                .slice(0, 4);
+ }
 
-            displayedCities.forEach(city => {
-                const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
-                const bearing = calculateBearing(centralCity.coords[0], centralCity.coords[1], city.coords[0], city.coords[1]);
-                
-                const radius = 140;
-                const x = 150 + radius * Math.sin(bearing * Math.PI / 180);
-                const y = 150 - radius * Math.cos(bearing * Math.PI / 180);
+ function calculateBearing(lat1,lon1,lat2,lon2) {
+     const φ
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+    
+    
+    
+    
+    
+    
+    
 
-                const cityMarker = document.createElement('div');
-                cityMarker.className = 'city-marker';
-                cityMarker.style.left = `${x}px`;
-                cityMarker.style.top = `${y}px`;
-                cityMarker.innerHTML = `${city.name} ${city.emoji}<br>${Math.round(distance)} km`;
-                compass.appendChild(cityMarker);
-            });
-        }
+    
+    
 
-        const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-        handler.setInputAction(function(click) {
-            if (clicksLeft > 0) {
-                const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
-                if (cartesian) {
-                    const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-                    const longitude = Cesium.Math.toDegrees(cartographic.longitude);
-                    const latitude = Cesium.Math.toDegrees(cartographic.latitude);
-                    
-                    const distance = calculateDistance(centralCity.coords[0], centralCity.coords[1], latitude, longitude);
-                    const maxDistance = 1000;
-                    const roundScore = Math.max(0, Math.round(1000 * Math.exp(-distance / 100)));
-                    totalScore += roundScore;
+    
 
-                    viewer.entities.add({
-                        position: cartesian,
-                        point: {
-                            pixelSize: 10,
-                            color: Cesium.Color.GREEN
-                        }
-                    });
+    
 
-                    addCentralPoint(centralCity.coords);
+    
 
-                    document.getElementById('score').innerText = `Score: ${totalScore} (+${roundScore})`;
-                    document.getElementById('next-round').style.display = 'block';
-                    clicksLeft--;
-                    document.getElementById('clicks-left').innerText = `Clics restants: ${clicksLeft}`;
-                }
-            }
-        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    
 
-        document.getElementById('next-round').addEventListener('click', function() {
-            roundNumber++;
-            if (roundNumber <= TOTAL_ROUNDS) {
-                startNewRound();
-            } else {
-                alert(`Jeu terminé! Votre score final est: ${totalScore}`);
-                roundNumber = 1;
-                totalScore = 0;
-                startNewRound();
-            }
-        });
+    
 
-        startNewRound();
-    </script>
-</body>
-</html>
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+
+
+    
+    
+    
+    
+    
+    const θ
+    =
+    Math.atan
+    (
+    y
+    ,
+    x
+    )
+    const bearing =(θ *180 /Math.PI +360 ) %360 ;return bearing ;
+
+}
+
+function updateCompass() {
+
+
+
+
+const compass =
+document.getElementById('compass');
+compass.innerHTML =
+'<div id="north-indicator">N</div>';
+
+const displayedCities =
+frenchCities.filter(city => city !== centralCity)
+.sort(() => 
+.
+-
+Math.random())
+.slice( 
+,
+);
+
+displayedCities.forEach(city => {
+
+
+
+
+const distance =
+calculateDistance(centralCity.coords[ 
+],
+centralCity.coords[ 
+],
+city.coords[ 
+],
+city.coords[ 
+]);
+const bearing =
+calculateBearing(centralCity.coords[ 
+],
+centralCity.coords[ 
+],
+city.coords[ 
+],
+city.coords[ 
+]);
+
+const radius =
+;const x =
++
+radius * Math.sin(bearing *Math.PI /);const y =
+-
+radius * Math.cos(bearing *Math.PI /);
+
+
+
+
+const cityMarker =
+document.createElement('div');
+cityMarker.className =
+'city-marker';
+cityMarker.style.left =
+`${x}px`;
+cityMarker.style.top =
+`${y}px`;
+cityMarker.innerHTML =
+`${city.name} ${city
+.
+}<br>${Math.round(distance)} km`;
+compass.appendChild(cityMarker);
+
+});
+
+}
+
+const handler =
+new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+handler.setInputAction(function(click){
+if(clicksLeft >){
+const cartesian =
+viewer.camera.pickEllipsoid(click.position,
+viewer.scene.globe
+.
+ellipsoid);
+if(cartesian ){
+const cartographic =
+Cesium.Cartographic.fromCartesian(cartesian );
+const longitude =
+Cesium.Math.toDegrees(cartographic.longitude );
+const latitude =
+Cesium.Math.toDegrees(cartographic.latitude );
+
+
+
+const distance =
+calculateDistance(centralCity.coords[ 
+],
+centralCity.coords[ 
+],
+latitude ,
+longitude );
+const maxDistance =
+; // Distance maximale en km pour obtenir des points
+const roundScore =
+Math.max(
+,
+Math.round(
+*
+Math.exp(-distance /
+)));
+totalScore +=roundScore ;
+
+viewer.entities.add({
+position :
+cartesian ,
+point:{
+pixelSize:
+,
+color:
+Cesium.Color.GREEN
+
+}
+
+});
+
+addCentralPoint(centralCity.coords);
+
+document.getElementById('score').innerText=`Score:${totalScore} (+${roundScore})`;
+document.getElementById('submit-guess').style.display='block';
+document.getElementById('guess-input').style.display='block';
+clicksLeft--;
+document.getElementById('clicks-left').innerText=`Clics restants:${clicksLeft}`;
+}
+
+}
+},Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+document.getElementById('submit-guess').addEventListener('click',function(){
+let guess=document.getElementById('guess-input').value.trim().toLowerCase();
+if(guess===centralCity.name.toLowerCase()){
+totalScore+=500; // Points supplémentaires pour une bonne réponse
+alert(`Bonne réponse! Vous gagnez des points supplémentaires.`);
+}else{
+alert(`Mauvaise réponse! La bonne réponse était ${centralCity.name}.`);
+}
+document.getElementById('score').innerText=`Score:${totalScore}`;
+document.getElementById('next-round').style.display='block';
+});
+
+document.getElementById('next-round').addEventListener('click',function(){
+roundNumber++;
+if(roundNumber<=TOTAL_ROUNDS){
+startNewRound();
+}else{
+alert(`Jeu terminé! Votre score final est:${totalScore}`);
+roundNumber=;
+
+totalScore=;
+
+startNewRound();
+}
+});
+
+startNewRound();
+</script >
+</body >
+</html >
